@@ -154,9 +154,11 @@
     <ClInclude Include="DebugOutput.h" />
     <ClInclude Include="FileTool.h" />
     <ClInclude Include="IniFile.h" />
+    <ClInclude Include="InlineHook.h" />
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="ProcessTool.h" />
     <ClInclude Include="PublicTool.h" />
+    <ClInclude Include="ResManager.h" />
     <ClInclude Include="ShareStruct.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringTool.h" />
@@ -172,6 +174,7 @@
     <ClCompile Include="DebugOutput.cpp" />
     <ClCompile Include="FileTool.cpp" />
     <ClCompile Include="IniFile.cpp" />
+    <ClCompile Include="InlineHook.cpp" />
     <ClCompile Include="ProcessTool.cpp" />
     <ClCompile Include="PublicTool.cpp" />
     <ClCompile Include="ShareStruct.cpp" />

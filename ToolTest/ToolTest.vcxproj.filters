@@ -75,6 +75,12 @@
     <ClInclude Include="SystemTool.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="InlineHook.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="ResManager.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -120,6 +126,9 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="SystemTool.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="InlineHook.cpp">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
