@@ -1,4 +1,6 @@
-#pragma once
+
+
+
 
 #define SetResDeleter(VarName, Deleter) CLResManager<decltype(VarName),std::function<VOID(decltype(VarName)&)>> VarName##Manager(VarName,Deleter)
 
@@ -10,7 +12,7 @@ public:
 	{
 
 	}
-	~CLResManager()
+	~CLResManager() 
 	{
 		m_fnDeletePtr(m_ResHandle);
 	}
@@ -20,3 +22,4 @@ private:
 	ResHandle& m_ResHandle;
 	Deleter m_fnDeletePtr;
 };
+

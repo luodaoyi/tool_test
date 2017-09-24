@@ -7,27 +7,47 @@
 
 #include "StringTool.h"
 #include "Shlwapi.h"
+#include <locale>
 #pragma comment(lib,"Shlwapi.lib")
+
+#include <codecvt>
+#include "BoostLog.h"
+
 
 namespace file_tools
 {
-	std::vector<wstring> ReadAsciiFileLines(const std::wstring & file_name)
+	std::vector<string> ReadAsciiFileLines(const std::wstring & file_name)
 	{
 		std::ifstream in_file(file_name);
-		std::vector<std::wstring> ret_lines;
+		std::vector<std::string> ret_lines;
 		if (in_file.is_open())
 		{
 			char line_buffer[1024];
 			while (in_file.getline(line_buffer, 1024))
 			{
-				ret_lines.push_back(string_tool::CharToWide(line_buffer));
+				ret_lines.push_back(line_buffer);
 			}
 			in_file.close();
 		}
 		return ret_lines;
 	}
 
-
+	std::vector<std::wstring> ReadUnicodeFileLines(const std::wstring & file_name)
+	{
+		std::wifstream in_file(file_name);
+		std::vector<std::wstring> ret_lines;
+		
+		if (in_file.is_open())
+		{
+			wchar_t line_buffer[10240] = { 0 };
+			while (in_file.getline(line_buffer, 10240))
+			{
+				ret_lines.push_back(line_buffer);
+			}
+			in_file.close();
+		}
+		return ret_lines;
+	}
 	wstring GetPathByPathFile(const std::wstring & strPathFile)
 	{
 		wstring strLocalFullPath = strPathFile;
@@ -120,6 +140,40 @@ namespace file_tools
 		return ::CreateDirectory(path.c_str(), NULL);
 	}
 
+	
+
+	BOOL ReadUnicodeFile(_In_ CONST std::wstring& wsPath, _Out_ std::wstring& wsContent)
+	{
+		FILE* pFile = nullptr;
+		_wfopen_s(&pFile, wsPath.c_str(), L"rb");
+		if (pFile == nullptr)
+		{
+			//LOG_CF(CLog::em_Log_Type::em_Log_Type_Exception, L"ReadScriptFile Fiald! Path:%s", wsPath.c_str());
+			LOGW(error) << L"ReadScriptFile Fiald! Path:" << wsPath;
+			return FALSE;
+		}
+
+		fseek(pFile, 0, SEEK_END);
+		LONG lLen = ftell(pFile);
+		lLen = (lLen + 2) / 2;
+
+		std::shared_ptr<WCHAR> pwstrBuffer(new WCHAR[lLen], [](WCHAR* p){delete[] p; });
+		if (pwstrBuffer == nullptr)
+		{
+			fclose(pFile);
+			LOGW(error) << L"Alloc Memory Fiald!";
+			return FALSE;
+		}
+
+		ZeroMemory(pwstrBuffer.get(), lLen * sizeof(WCHAR));
+		fseek(pFile, 0, SEEK_SET);
+		fread(pwstrBuffer.get(), sizeof(WCHAR), (size_t)lLen - 1, pFile);
+		pwstrBuffer.get()[lLen - 1] = '\0';
+
+		wsContent = pwstrBuffer.get() + ((pwstrBuffer.get()[0] == 0xFEFF) ? 1 : 0);
+		fclose(pFile);
+		return TRUE;
+	}
 	
 }
 

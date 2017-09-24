@@ -26,4 +26,11 @@ namespace public_tool
 		auto itr = std::find_if(vlst.begin(), vlst.end(), _Pred);
 		return itr == vlst.end() ? nullptr : &*itr;
 	}
+
+	template<class T, class Finder>
+	static T* Vec_find_if(_In_ std::vector<T>& vlst, _In_ Finder _Pred)
+	{
+		auto itr = std::find_if(vlst.begin(), vlst.end(), _Pred);
+		return itr == vlst.end() ? nullptr : &*itr;
+	}
 }

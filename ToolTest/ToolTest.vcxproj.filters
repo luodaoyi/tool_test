@@ -16,6 +16,9 @@
     <Filter Include="common">
       <UniqueIdentifier>{1c356dec-b098-46b9-9036-006c99d0ae20}</UniqueIdentifier>
     </Filter>
+    <Filter Include="other">
+      <UniqueIdentifier>{9daa9b85-bf45-4eb6-864a-dc1301c7a7a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -81,6 +84,12 @@
     <ClInclude Include="ResManager.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="Language.h">
+      <Filter>other</Filter>
+    </ClInclude>
+    <ClInclude Include="CLResManager.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -130,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="InlineHook.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="Language.cpp">
+      <Filter>other</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

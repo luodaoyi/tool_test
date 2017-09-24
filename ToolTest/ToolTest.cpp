@@ -1,4 +1,4 @@
-// ToolTest.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+ï»¿// ToolTest.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include "stdafx.h"
@@ -21,21 +21,26 @@ using namespace std;
 
 #include <string>
 
+#include "ResManager.h"
+
+
+//æµ‹è¯•éŸ©æœèµ„æºåç§°è½¬æ¢
+#include "Language.h"
 
 void MyMessageBox(const char * szBuff)
 {
 	if (szBuff)
-		std::cout << "MessageBoxÄÚÈİ:" <<szBuff<< std::endl;
+		std::cout << "MessageBoxå†…å®¹:" <<szBuff<< std::endl;
 }
 
 _declspec(naked) void nakedPrivateChat()
 {
 	__asm
 	{
-		pushad  //±£´æ¼Ä´æÆ÷
+		pushad  //ä¿å­˜å¯„å­˜å™¨
 
-			mov ebp, esp  //ÕâÊÇ¹Ì¶¨µÄ
-			add ebp, 0x20   //ÕâÒ²ÊÇ¹Ì¶¨µÄ ´¦ÀípushadµÄ¶ÑÕ»
+			mov ebp, esp  //è¿™æ˜¯å›ºå®šçš„
+			add ebp, 0x20   //è¿™ä¹Ÿæ˜¯å›ºå®šçš„ å¤„ç†pushadçš„å †æ ˆ
 
 			mov eax, [ebp + 0x8]
 			push eax
@@ -44,11 +49,11 @@ _declspec(naked) void nakedPrivateChat()
 
 
 
-			popad //±£´æ¼Ä´æÆ÷È¡Ïû
+			popad //ä¿å­˜å¯„å­˜å™¨å–æ¶ˆ
 
 
 			/*
-			ÏÂÃæÒªnop HOOK¿â»á½«ÏÂÃæµÄnop¸Ä³ÉÏàÓ¦µÄ´úÂë
+			ä¸‹é¢è¦nop HOOKåº“ä¼šå°†ä¸‹é¢çš„nopæ”¹æˆç›¸åº”çš„ä»£ç 
 			*/
 			nop
 			nop
@@ -77,23 +82,62 @@ _declspec(naked) void nakedPrivateChat()
 	}
 }
 
+#include <set>
+
+
+struct CTestCopy
+{
+	CTestCopy(){}
+	CTestCopy(const CTestCopy & t)
+	{
+		x = t.x;
+	}
+	int x ;
+	int y ;
+};
+
+void MyReleaseMutex(HANDLE h)
+{
+	::CloseHandle(h);
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
-	system("pause");
-	std::string temp = "zhangdongsheng";
 
-	std::vector<char> data;
-	data.resize(temp.length());
-	memset(data.data(), 1, data.size());
+// 	std::string temp = "zhangdongsheng";
+// 
+// 	std::vector<char> data;
+// 	data.resize(temp.length());
+// 	memset(data.data(), 1, data.size());
 
 	//std::copy(szBuff, szBuff + strlen(szBuff), data.begin());
 	//std::copy(temp.begin(), temp.end(), data.begin());
-	system("pause");
+	//system("pause");
 
-	CInlineHook Hook((DWORD)::MessageBoxA, (DWORD)nakedPrivateChat,0);
+// 	CInlineHook Hook((DWORD)::MessageBoxA, (DWORD)nakedPrivateChat,0);
+// 	Hook.Hook();
+// 	::MessageBoxA(NULL, "4124141", NULL, MB_OK);
+	
+// 	HWND hWnd = FindWindow(NULL, L"LUA_SHOW_DEBUG");
+// 	//SetWindowPos(hWnd, HWND_TOP, -100, 0, 500, 800, SWP_NOSIZE);
+// 	MoveWindow(hWnd, -100, 0, 500, 800, TRUE);
 
-	Hook.Hook();
-	::MessageBoxA(NULL, "4124141", NULL, MB_OK);
+// 	size_t len = std::wstring(L"ì´ëŸ°. ì•„ì´ í•˜ë‚˜ ë•Œë¬¸ì— ê³¤ë€ì„").length();
+// 
+// 	CLanguage & language = CLanguage::GetInstance();
+// 	std::wstring s = language.GetOtherText_By_LocalText(L"ë¶€ì„œì§„ ì¹¼ë‚ ");
+
+
+	
+	HANDLE hMutex = CreateMutex(NULL, FALSE, NULL);
+
+	{
+		SetResDeleter(hMutex, [](HANDLE & h){MyReleaseMutex(h); });
+	}
+
+
+
+
 
 	system("pause");
 	return 0;
