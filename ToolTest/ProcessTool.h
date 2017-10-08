@@ -17,4 +17,10 @@ namespace process_tool
 	HWND FindProcessWnd(const DWORD dwPid, LPWSTR class_name, LPWSTR caption_name);//得到进程窗口
 	HWND WaitForProcessWindow(const DWORD dwPid, DWORD milli_seconds, LPWSTR class_name, LPWSTR caption_name);//等待进程窗口显示
 	DWORD GetWindowThreadID(HWND hWnd);
+	DWORD GetPidFromExeName(const wchar_t * szExeName, DWORD ParentId = 0);
+
+	namespace mem_inject
+	{
+		DWORD MemLoadLibraryA(const char *FilePath, HANDLE hTargetHandle);
+	}
 }

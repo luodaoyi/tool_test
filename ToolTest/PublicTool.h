@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <functional>
 
 namespace public_tool
 {
@@ -33,4 +34,8 @@ namespace public_tool
 		auto itr = std::find_if(vlst.begin(), vlst.end(), _Pred);
 		return itr == vlst.end() ? nullptr : &*itr;
 	}
+
+
+
+	
 }

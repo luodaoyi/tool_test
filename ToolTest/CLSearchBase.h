@@ -14,6 +14,12 @@ public:
 #else
 	static DWORD	FindAddr(LPCSTR lpszCode, int nOffset, int nOrderNum, LPCWSTR lpszModule);
 	static DWORD	FindCALL(LPCSTR lpszCode, int nOffset, DWORD dwModuleAddr, int nMov, int nOrderNum, LPCWSTR lpszModule);
+	/*FindBase说明：
+	nOffset 这值=特征码基址-实际基址
+	nMov    这值=定位到的汇编行与实际基址前面的字节数
+	nOrderNum 这个表示按第几次找见为准，第一次就是0
+	lpszModule 这个表示要找的模块名称
+	*/
 	static DWORD	FindBase(LPCSTR lpszCode, int nOffset, int nMov, int nOrderNum, LPCWSTR lpszModule, DWORD dwAddrLen = 0xFFFFFFFF);
 	static DWORD	FindBase_ByCALL(LPCSTR lpszCode, int nOffset, DWORD dwModuleAddr, int nMov, int nOrderNum, LPCWSTR lpszModule, int nBaseOffset, DWORD dwAddrLen = 0xFFFFFFFF);
 	static BOOL		SearchBase(LPCSTR szCode, DWORD * pArray, UINT& puLen, LPCWSTR lpszModule);

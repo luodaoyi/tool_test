@@ -9,6 +9,10 @@ class CShareStruct
 public:
 	enum SHARE_TYPE{NONE, CREATOR,OPENER,};
 	CShareStruct() = default;
+	CShareStruct(LPCWSTR name)
+	{
+		CreateShare(name);
+	}
 	VOID CShareStruct::CloseShare()
 	{
 		if (m_data_ptr)
@@ -73,7 +77,7 @@ public:
 	{
 		if (!map_name || wcslen(map_name) == 0)
 		{
-			LOGW_ERROR ( L"OpenShared Failed! name is invalid");
+			OutputDebugStr ( L"OpenShared Failed! name is invalid");
 			return FALSE;
 		}
 		if (m_data_ptr || system_tool::IsValidHandle(m_map_file_handle))
@@ -101,6 +105,10 @@ public:
 
 	CShareStruct(const CShareStruct &) = delete;
 	void operator=(const CShareStruct &) = delete;
+	BOOL IsValid() const
+	{
+		return system_tool::IsValidHandle(m_map_file_handle);
+	}
 private:
 	BOOL MapMemery()
 	{
