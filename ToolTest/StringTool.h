@@ -16,6 +16,7 @@ namespace string_tool
 
 	std::wstring utf8_to_wstring(const std::string& str);
 	std::string wstring_to_utf8(const std::wstring& str);
+	std::string gpk_to_utf8(const std::string & str);
 
 	size_t   GetHash(const std::string& str);	
 	size_t	GetHash(const std::wstring& wstr);

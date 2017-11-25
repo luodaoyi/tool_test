@@ -126,6 +126,11 @@ namespace string_tool
 		return myconv.to_bytes(str);
 	}
 
+	std::string gpk_to_utf8(const std::string & str)
+	{
+		return wstring_to_utf8(CharToWide(str.c_str()));
+	}
+
 	size_t GetHash(_In_ CONST std::string& str)
 	{
 		size_t result = 0;

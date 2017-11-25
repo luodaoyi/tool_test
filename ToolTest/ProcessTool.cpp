@@ -766,5 +766,46 @@ namespace process_tool
 		return GetWindowThreadProcessId(hWnd, NULL);
 	}
 
+
+
+	DWORD GetPidFromExeName(const wchar_t * szExeName, DWORD ParentId)
+	{
+		HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+		BOOL ret = FALSE;
+		PROCESSENTRY32 info;//声明进程信息变量
+		info.dwSize = sizeof(PROCESSENTRY32);
+		int i = 0;
+		DWORD dwPid = 0;
+		std::wstring strExeNameTerminate = std::wstring(szExeName);
+		transform(strExeNameTerminate.begin(), strExeNameTerminate.end(), strExeNameTerminate.begin(), tolower);
+
+		if (Process32First(handle, &info))
+		{
+			std::wstring strExeFileName = std::wstring(info.szExeFile);
+			transform(strExeFileName.begin(), strExeFileName.end(), strExeFileName.begin(), tolower);
+			if (strExeFileName == strExeNameTerminate && (ParentId == 0 || ParentId == info.th32ParentProcessID))
+			{
+				dwPid = info.th32ProcessID;
+
+			}
+			else
+			{
+				while (Process32Next(handle, &info) != FALSE)
+				{
+					strExeFileName = std::wstring(info.szExeFile);
+					transform(strExeFileName.begin(), strExeFileName.end(), strExeFileName.begin(), tolower);
+					if (strExeFileName == strExeNameTerminate && (ParentId == 0 || ParentId == info.th32ParentProcessID))
+					{
+						dwPid = info.th32ProcessID;
+						break;
+					}
+				}
+			}
+		}
+		CloseHandle(handle);
+		return dwPid;
+	}
+
+
 }
 
