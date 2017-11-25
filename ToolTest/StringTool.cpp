@@ -79,40 +79,6 @@ namespace string_tool
 	}
 
 
-	std::vector<wstring> SplitStrByFlag(const std::wstring & str, const std::wstring& strFlag)
-	{
-		//aaa,333,444
-		std::vector<wstring> strRet;
-		wstring strTemp = str;
-		if (strTemp.empty()) return strRet;
-		if (strTemp.find(strFlag) == std::wstring::npos)
-		{
-			//only has one item
-			strRet.push_back(str);
-			return strRet;
-		}
-
-		size_t nFlagLen = strFlag.length();
-		size_t nStartPos = 0;
-		size_t nEndPos;
-		size_t nFindStart = 0;
-		while (1)
-		{
-			nEndPos = strTemp.find(strFlag, nFindStart);
-			if (nEndPos != std::wstring::npos)
-			{
-				strRet.push_back(strTemp.substr(nStartPos, nEndPos - nStartPos));
-				nStartPos = nEndPos + nFlagLen;
-				nFindStart = nStartPos;
-			}
-			else
-			{
-				strRet.push_back(strTemp.substr(nStartPos, strTemp.length() - nStartPos));
-				break;
-			}
-		};
-		return strRet;
-	}
 
 
 	std::wstring utf8_to_wstring(const std::string& str)

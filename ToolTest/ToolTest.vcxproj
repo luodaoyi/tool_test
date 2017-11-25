@@ -168,6 +168,7 @@
     <ClInclude Include="SystemTool.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="HandleMy.h" />
+    <ClInclude Include="TimeTool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmTool.cpp" />
@@ -190,6 +191,7 @@
     </ClCompile>
     <ClCompile Include="StringTool.cpp" />
     <ClCompile Include="SystemTool.cpp" />
+    <ClCompile Include="TimeTool.cpp" />
     <ClCompile Include="ToolTest.cpp" />
     <ClCompile Include="HandleMy.cpp" />
   </ItemGroup>

@@ -15,6 +15,7 @@
 #include "HandleMy.h"
 #include <assert.h>
 #include "BoostLog.h"
+#include <fstream>
 
 #include "InlineHook.h"
 using namespace std;
@@ -22,10 +23,12 @@ using namespace std;
 #include <string>
 
 #include "ResManager.h"
-
+#include <deque>
+#include "PublicTool.h"
 
 //测试韩服资源名称转换
 #include "Language.h"
+#include <functional>
 
 void MyMessageBox(const char * szBuff)
 {
@@ -101,6 +104,21 @@ void MyReleaseMutex(HANDLE h)
 	::CloseHandle(h);
 }
 
+struct Test
+{
+	int member_count;
+	std::wstring fuben_name;
+	std::string caree_group;
+	bool is_cross_team;
+
+	operator bool() const
+	{
+		return member_count == 10;
+	}
+};
+
+
+#include "TimeTool.h"
 int _tmain(int argc, _TCHAR* argv[])
 {
 
@@ -128,10 +146,34 @@ int _tmain(int argc, _TCHAR* argv[])
 // 	std::wstring s = language.GetOtherText_By_LocalText(L"부서진 칼날");
 
 
-	DWORD dwPid = process_tool::GetPidFromExeName(L"wuxia_client.exe", NULL);
-	HANDLE hProcess = ::OpenProcess(PROCESS_VM_OPERATION, FALSE, dwPid);
-	process_tool::mem_inject::MemLoadLibraryA(R"(E:\code\InjectDll\Debug\InjectDllLib.dll)", hProcess);
+// 	DWORD dwPid = process_tool::GetPidFromExeName(L"wuxia_client.exe", NULL);
+// 	HANDLE hProcess = ::OpenProcess(PROCESS_VM_OPERATION, FALSE, dwPid);
+// 	process_tool::mem_inject::MemLoadLibraryA(R"(E:\code\InjectDll\Debug\InjectDllLib.dll)", hProcess);
 
+
+// 	std::list<int> vlist = { 0, 1, 2, 3, 4, 5 };
+// 
+// 	auto iter_beg = vlist.begin();
+// 	std::cout << *iter_beg << std::endl;
+// 
+// 	auto iter_n = std::next(iter_beg);
+// 	std::cout << *iter_n << std::endl;
+// 	std::cout << *iter_beg << std::endl;
+// 	
+// 	std::deque<int> test = { 0, 1, 2, 3, 4, 5 };
+// 
+// 	int * pInt = &test[3];
+// 
+// 	std::cout << *pInt << std::endl;
+// 	test.erase(test.begin() + 2);
+// 	std::cout << *pInt << std::endl;
+// 	test.erase(test.begin() + 2);
+// 	std::cout << *pInt << std::endl;
+
+
+	file_tools::WriteUnicodeFile(L"test.txt", L"你好你好\r\n");
+	file_tools::AppendUnicodeFile(L"test.txt", L"11");
+	file_tools::AppendUnicodeFile(L"test.txt", L"이런. 아이 하나 때문에 곤란");
 
 
 

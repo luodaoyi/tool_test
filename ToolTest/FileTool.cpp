@@ -7,11 +7,13 @@
 
 #include "StringTool.h"
 #include "Shlwapi.h"
-#include <locale>
-#pragma comment(lib,"Shlwapi.lib")
 
+#pragma comment(lib,"Shlwapi.lib")
+#include <locale>
 #include <codecvt>
-#include "BoostLog.h"
+#include <memory>
+#include "DebugOutput.h"
+#include <mutex>
 
 
 namespace file_tools
@@ -36,18 +38,72 @@ namespace file_tools
 	{
 		std::wifstream in_file(file_name);
 		std::vector<std::wstring> ret_lines;
-		
 		if (in_file.is_open())
 		{
+			auto loc = std::locale(in_file.getloc(), new std::codecvt_utf16<wchar_t, 0x10ffff, std::consume_header>);
+			auto name = loc.name();
+			in_file.imbue(loc);
 			wchar_t line_buffer[10240] = { 0 };
 			while (in_file.getline(line_buffer, 10240))
 			{
-				ret_lines.push_back(line_buffer);
+				std::wstring line = line_buffer;
+				if (line.empty())
+					continue;
+				if (*line.rbegin() == '\r')
+					line.erase(line.length() - 1);
+				ret_lines.push_back(line);
 			}
 			in_file.close();
 		}
 		return ret_lines;
 	}
+
+
+	BOOL CreateUnicodeTextFile(_In_ CONST std::wstring& cwsPath)
+	{
+		FILE* pFile = nullptr;
+		_wfopen_s(&pFile, cwsPath.c_str(), L"a");
+		if (pFile == NULL)
+		{
+			OutputDebugStr( L"创建文件:%s 失败!", cwsPath.c_str());
+			return FALSE;
+		}
+
+		fseek(pFile, 0, SEEK_SET);
+		WCHAR wszFlag = 0xFEFF;
+		fwrite(&wszFlag, sizeof(WCHAR), 1, pFile);
+		fclose(pFile);
+		return TRUE;
+	}
+
+
+	BOOL WriteUnicodeFile(const std::wstring & wsPath, const std::wstring & wsContent)
+	{
+		static std::mutex MutexWriteUnicodeFile;
+		std::lock_guard<std::mutex> lck(MutexWriteUnicodeFile);
+		if (!PathFileExists(wsPath.c_str()))
+			CreateUnicodeTextFile(wsPath);
+
+		FILE* pFile = nullptr;
+		_wfopen_s(&pFile, wsPath.c_str(), L"wb+");
+		if (pFile == nullptr)
+		{
+			OutputDebugStr( L"ReadScriptFile Fiald! Path:%s", wsPath.c_str());
+			return FALSE;
+		}
+
+		std::shared_ptr<WCHAR> pwstrBuffer(new WCHAR[wsContent.length() + 1], [](WCHAR* p){delete[] p; });
+		pwstrBuffer.get()[0] = 0xFEFF;
+		memcpy(pwstrBuffer.get() + 1, wsContent.c_str(), wsContent.length() * 2);
+
+		fseek(pFile, 0, SEEK_SET);
+
+		fwrite(pwstrBuffer.get(), sizeof(WCHAR), wsContent.length() + 1, pFile);
+		fclose(pFile);
+		return TRUE;
+
+	}
+
 	wstring GetPathByPathFile(const std::wstring & strPathFile)
 	{
 		wstring strLocalFullPath = strPathFile;
@@ -149,7 +205,7 @@ namespace file_tools
 		if (pFile == nullptr)
 		{
 			//LOG_CF(CLog::em_Log_Type::em_Log_Type_Exception, L"ReadScriptFile Fiald! Path:%s", wsPath.c_str());
-			LOGW(error) << L"ReadScriptFile Fiald! Path:" << wsPath;
+			OutputDebugStr(L"ReadScriptFile Fiald! Path:%s", wsPath.c_str());
 			return FALSE;
 		}
 
@@ -161,7 +217,7 @@ namespace file_tools
 		if (pwstrBuffer == nullptr)
 		{
 			fclose(pFile);
-			LOGW(error) << L"Alloc Memory Fiald!";
+			OutputDebugStr(L"Alloc Memory Fiald!");
 			return FALSE;
 		}
 
@@ -174,6 +230,35 @@ namespace file_tools
 		fclose(pFile);
 		return TRUE;
 	}
+
+	BOOL  AppendUnicodeFile(_In_ CONST std::wstring& cwsPath, _In_ CONST std::wstring& cwsContent)
+	{
+		static std::mutex MutexAppendUnicodeFile;
+		std::lock_guard<std::mutex> lck(MutexAppendUnicodeFile);
+
+		if (!PathFileExists(cwsPath.c_str()))
+			CreateUnicodeTextFile(cwsPath);
+
+		FILE* pFile = nullptr;
+		_wfopen_s(&pFile, cwsPath.c_str(), L"ab+");
+		if (pFile == nullptr)
+		{
+			OutputDebugStr(L"AppendUnicodeFile Fiald! Path:%s", cwsPath.c_str());
+			return FALSE;
+		}
+
+		fseek(pFile, 0, SEEK_END);
+
+		std::wstring wsContent = cwsContent;
+		if (cwsContent[cwsContent.length() - 1] != '\r\n')
+			wsContent.append(L"\r\n");
+
+		fwrite(wsContent.c_str(), sizeof(WCHAR), wsContent.length(), pFile);
+		fclose(pFile);
+		return TRUE;
+	}
 	
+
+
 }
 

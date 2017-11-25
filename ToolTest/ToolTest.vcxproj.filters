@@ -90,6 +90,9 @@
     <ClInclude Include="CLResManager.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="TimeTool.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -142,6 +145,9 @@
     </ClCompile>
     <ClCompile Include="Language.cpp">
       <Filter>other</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeTool.cpp">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

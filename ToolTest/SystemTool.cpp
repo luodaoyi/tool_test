@@ -36,7 +36,7 @@ namespace system_tool
 			auto ret = fn();
 			if (ret == RET_OK)
 				return TRUE;
-			else if (ret = RET_WAIT)
+			else if (ret == RET_WAIT)
 				continue;
 			else if (ret == RET_BREAK)
 				return FALSE;

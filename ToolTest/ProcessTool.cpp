@@ -5,8 +5,8 @@
 #include <TlHelp32.h>
 #include <algorithm>  
 #include <Shlwapi.h>
-#include "HandleMy.h"
-
+#include <psapi.h> 
+#include "ResManager.h"
 namespace process_tool
 {
 	BOOL IsProcessRunning(DWORD dwPid)
@@ -670,7 +670,8 @@ namespace process_tool
 	std::vector<DWORD> GetPidsFromExeName(const std::wstring & szExeName, DWORD ParentId )
 	{
 		std::vector<DWORD> ret_pid_list;
-		CAutoCloseHandle handle(CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
+		HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+		SetResDeleter(handle, [](HANDLE & h){CloseHandle(h); });
 		BOOL ret = FALSE;
 		PROCESSENTRY32 info;//声明进程信息变量
 		info.dwSize = sizeof(PROCESSENTRY32);
@@ -768,44 +769,27 @@ namespace process_tool
 
 
 
-	DWORD GetPidFromExeName(const wchar_t * szExeName, DWORD ParentId)
+
+
+
+
+
+
+
+	BOOL GetProcessExePath(DWORD dwPid,std::wstring & full_path)
 	{
-		HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-		BOOL ret = FALSE;
-		PROCESSENTRY32 info;//声明进程信息变量
-		info.dwSize = sizeof(PROCESSENTRY32);
-		int i = 0;
-		DWORD dwPid = 0;
-		std::wstring strExeNameTerminate = std::wstring(szExeName);
-		transform(strExeNameTerminate.begin(), strExeNameTerminate.end(), strExeNameTerminate.begin(), tolower);
-
-		if (Process32First(handle, &info))
+		HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, dwPid);
+		if (!hProcess)
+			return FALSE;
+		TCHAR file_name[MAX_PATH] = { 0 };
+		if (GetModuleFileNameEx(hProcess, NULL, file_name, MAX_PATH))
 		{
-			std::wstring strExeFileName = std::wstring(info.szExeFile);
-			transform(strExeFileName.begin(), strExeFileName.end(), strExeFileName.begin(), tolower);
-			if (strExeFileName == strExeNameTerminate && (ParentId == 0 || ParentId == info.th32ParentProcessID))
-			{
-				dwPid = info.th32ProcessID;
-
-			}
-			else
-			{
-				while (Process32Next(handle, &info) != FALSE)
-				{
-					strExeFileName = std::wstring(info.szExeFile);
-					transform(strExeFileName.begin(), strExeFileName.end(), strExeFileName.begin(), tolower);
-					if (strExeFileName == strExeNameTerminate && (ParentId == 0 || ParentId == info.th32ParentProcessID))
-					{
-						dwPid = info.th32ProcessID;
-						break;
-					}
-				}
-			}
+			full_path = file_name;
+			return TRUE;
 		}
-		CloseHandle(handle);
-		return dwPid;
+		else
+			return FALSE;
 	}
-
 
 
 

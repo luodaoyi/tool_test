@@ -14,6 +14,8 @@ namespace file_tools
 	BOOL  CreateDirectoryNested(const std::wstring &  path);//嵌套创建文件夹
 	BOOL IsValidFilePath(const std::wstring & file_path);
 	BOOL ReadUnicodeFile(_In_ CONST std::wstring& wsPath, _Out_ std::wstring& wsContent);
+	BOOL WriteUnicodeFile(const std::wstring & file_name, const std::wstring & wsContent);
+	BOOL  AppendUnicodeFile(_In_ CONST std::wstring& cwsPath, _In_ CONST std::wstring& cwsContent);
 }
 
 

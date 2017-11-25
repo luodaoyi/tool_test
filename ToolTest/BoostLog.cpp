@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "BoostLog.h"
-#include "DebugOutput.h"
+
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -25,7 +25,7 @@
 
 
 #include "StringTool.h"
-
+#include "DebugOutput.h"
 
 namespace boost_log
 {

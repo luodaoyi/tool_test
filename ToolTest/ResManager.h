@@ -1,5 +1,5 @@
 #pragma once
-
+#include <functional>
 #define SetResDeleter(VarName, Deleter) CLResManager<decltype(VarName),std::function<VOID(decltype(VarName)&)>> VarName##Manager(VarName,Deleter)
 
 template<typename ResHandle, typename Deleter>
