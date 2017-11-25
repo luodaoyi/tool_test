@@ -128,13 +128,9 @@ int _tmain(int argc, _TCHAR* argv[])
 // 	std::wstring s = language.GetOtherText_By_LocalText(L"부서진 칼날");
 
 
-	
-	HANDLE hMutex = CreateMutex(NULL, FALSE, NULL);
-
-	{
-		SetResDeleter(hMutex, [](HANDLE & h){MyReleaseMutex(h); });
-	}
-
+	DWORD dwPid = process_tool::GetPidFromExeName(L"wuxia_client.exe", NULL);
+	HANDLE hProcess = ::OpenProcess(PROCESS_VM_OPERATION, FALSE, dwPid);
+	process_tool::mem_inject::MemLoadLibraryA(R"(E:\code\InjectDll\Debug\InjectDllLib.dll)", hProcess);
 
 
 

@@ -25,7 +25,7 @@ namespace system_tool
 		::ReleaseMutex(hHandle);
 	}
 
-	BOOL DoActionTimeOut(DWORD dwMilliseconds, std::function<BOOL(void)> fn)
+	BOOL DoActionTimeOut(DWORD dwMilliseconds, std::function<ACTION_RET(void)> fn)
 	{
 		DWORD begin_time = GetTickCount();
 		while (true)
@@ -33,8 +33,13 @@ namespace system_tool
 			Sleep(500);
 			if (GetTickCount() - begin_time > dwMilliseconds)
 				return FALSE;	
-			if (fn())
+			auto ret = fn();
+			if (ret == RET_OK)
 				return TRUE;
+			else if (ret = RET_WAIT)
+				continue;
+			else if (ret == RET_BREAK)
+				return FALSE;
 		}
 		return FALSE;
 	}

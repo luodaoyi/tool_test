@@ -37,5 +37,5 @@ namespace public_tool
 
 
 
-	BOOL DoFuncTimeOut(std::function<bool()> fn, DWORD max_time);
+	
 }
