@@ -170,11 +170,9 @@ int _tmain(int argc, _TCHAR* argv[])
 // 	test.erase(test.begin() + 2);
 // 	std::cout << *pInt << std::endl;
 
-
-	file_tools::WriteUnicodeFile(L"test.txt", L"你好你好\r\n");
-	file_tools::AppendUnicodeFile(L"test.txt", L"11");
-	file_tools::AppendUnicodeFile(L"test.txt", L"이런. 아이 하나 때문에 곤란");
-
+	float hp = 425.0f;
+	float hp_max = 2000.5f;
+	std::cout << (DWORD)(hp / hp_max * 100) << std::endl;
 
 
 	system("pause");
