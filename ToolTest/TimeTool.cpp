@@ -11,6 +11,7 @@
 
 
 #include <time.h>
+#include "StringTool.h"
 
 namespace time_tool
 {
@@ -24,7 +25,10 @@ namespace time_tool
 			throw std::runtime_error("error GetTimeFromString");
 		tm.tm_year -= 1900;
 		tm.tm_mon -= 1;
-		return mktime(&tm);
+		auto ret = mktime(&tm);
+		if (-1 == ret)
+			throw std::bad_cast((std::string("GetTimeFromString ") + string_tool::WideToChar(s.c_str())).c_str());
+		return ret;
 	}
 
 	std::wstring TimeToString(const time_t time)
