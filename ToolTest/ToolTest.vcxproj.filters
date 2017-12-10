@@ -93,6 +93,9 @@
     <ClInclude Include="TimeTool.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="Verification.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -148,6 +151,9 @@
     </ClCompile>
     <ClCompile Include="TimeTool.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="Verification.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

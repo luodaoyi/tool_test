@@ -19,7 +19,7 @@
 
 #include "InlineHook.h"
 using namespace std;
-
+#include <boost/assert.hpp>
 #include <string>
 
 #include "ResManager.h"
@@ -30,6 +30,9 @@ using namespace std;
 #include "Language.h"
 #include <functional>
 
+#include "StringTool.h"
+#include "verification.h"
+#include "TimeTool.h"
 void MyMessageBox(const char * szBuff)
 {
 	if (szBuff)
@@ -170,14 +173,14 @@ int _tmain(int argc, _TCHAR* argv[])
 // 	test.erase(test.begin() + 2);
 // 	std::cout << *pInt << std::endl;
 
+	//BOOST_ASSERT_MSG(false, L"啊啊啊");
 
-	file_tools::WriteUnicodeFile(L"test.txt", L"你好你好\r\n");
-	file_tools::AppendUnicodeFile(L"test.txt", L"11");
-	file_tools::AppendUnicodeFile(L"test.txt", L"이런. 아이 하나 때문에 곤란");
+	time_t t = time_tool::GetTimeFromString(L"2017-02-07 00:49:57");
+	time_t t_cur = time(NULL);
 
 
 
-	system("pause");
+
 	return 0;
 }
 

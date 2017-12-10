@@ -257,6 +257,25 @@ namespace file_tools
 		fclose(pFile);
 		return TRUE;
 	}
+
+	BOOL ReadFile(const std::wstring & file_name, std::vector<char>  &content)
+	{
+
+		FILE* pFile = nullptr;
+		_wfopen_s(&pFile, file_name.c_str(), L"rb");
+		if (pFile == nullptr)
+		{
+			OutputDebugStr(L"AppendUnicodeFile Fiald! Path:%s", file_name.c_str());
+			return FALSE;
+		}
+
+		fseek(pFile, 0, SEEK_END);
+		auto size = ftell(pFile);
+		content.resize(size);
+		fread(content.data(), 1, size, pFile);
+		fclose(pFile);
+		return TRUE;
+	}
 	
 
 

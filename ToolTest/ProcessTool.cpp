@@ -867,7 +867,7 @@ namespace process_tool
 			*(BYTE*)((DWORD)local_jmpbuffer) = 0xE9;
 			*(DWORD*)((DWORD)local_jmpbuffer + 1) = (DWORD)local_Proc - mFuncAddr - 5;
 
-			WriteProcessMemory(hProcess, (LPVOID)mFuncAddr, local_jmpbuffer, 5, &NumberOfByte);
+			BOOL bWrite = WriteProcessMemory(hProcess, (LPVOID)mFuncAddr, local_jmpbuffer, 5, &NumberOfByte);
 
 			VirtualProtectEx((HANDLE)hProcess, (LPVOID)mFuncAddr, 5, PAGE_EXECUTE_READWRITE, &local_oldprotect);
 
@@ -875,7 +875,7 @@ namespace process_tool
 
 			int memsize = 80;
 
-			WriteProcessMemory(hProcess, (LPVOID)local_Proc, mFunc, 0X1000, &NumberOfByte);
+			bWrite =WriteProcessMemory(hProcess, (LPVOID)local_Proc, mFunc, 0X1000, &NumberOfByte);
 			WriteProcessMemory(hProcess, ParamAddr, Param, ParamSize, &NumberOfByte);
 
 			hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)mFuncAddr, ParamAddr, 0, NULL);
@@ -1499,6 +1499,188 @@ namespace process_tool
 		}
 	}
 
+	// Loadlibrary template
+	typedef HMODULE(__stdcall* pLoadLibraryA)(LPCSTR);
+	// getprocaddress template
+	typedef FARPROC(__stdcall* pGetProcAddress)(HMODULE, LPCSTR);
 
-}
+	// dll entrypoint template
+	typedef INT(__stdcall* dllmain)(HMODULE, DWORD32, LPVOID);
+
+	// parameters for "libraryloader()" 
+	struct loaderdata {
+		LPVOID ImageBase; //base address of dll 
+		PIMAGE_NT_HEADERS NtHeaders;
+		PIMAGE_BASE_RELOCATION BaseReloc;
+		PIMAGE_IMPORT_DESCRIPTOR ImportDir;
+
+		pLoadLibraryA fnLoadLibraryA;
+		pGetProcAddress fnGetProcAddress;
+	};
+
+
+	// code responsible for loading the dll in remote process:
+	//(this will be copied to and executed in the target process)
+	DWORD __stdcall LibraryLoader(LPVOID Memory)
+	{
+		loaderdata* LoaderParams = (loaderdata*)Memory;
+
+		PIMAGE_BASE_RELOCATION ImageRelocation = LoaderParams->BaseReloc;
+
+		DWORD delta = (DWORD)((LPBYTE)LoaderParams->ImageBase - LoaderParams->NtHeaders->OptionalHeader.ImageBase); // Calculate the delta
+
+		while (ImageRelocation->VirtualAddress) {
+			if (ImageRelocation->SizeOfBlock >= sizeof(PIMAGE_BASE_RELOCATION))
+			{
+				int count = (ImageRelocation->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
+				PWORD list = (PWORD)(ImageRelocation + 1);
+
+				for (int i = 0; i < count; i++)
+				{
+					if (list[i])
+					{
+						PDWORD ptr = (PDWORD)((LPBYTE)LoaderParams->ImageBase + (ImageRelocation->VirtualAddress + (list[i] & 0xFFF)));
+						*ptr += delta;
+					}
+				}
+				ImageRelocation = (PIMAGE_BASE_RELOCATION)((LPBYTE)ImageRelocation + ImageRelocation->SizeOfBlock);
+			}
+		}
+
+		PIMAGE_IMPORT_DESCRIPTOR ImportDesc = LoaderParams->ImportDir;
+		while (ImportDesc->Characteristics) {
+			PIMAGE_THUNK_DATA OrigFirstThunk = (PIMAGE_THUNK_DATA)((LPBYTE)LoaderParams->ImageBase + ImportDesc->OriginalFirstThunk);
+			PIMAGE_THUNK_DATA FirstThunk = (PIMAGE_THUNK_DATA)((LPBYTE)LoaderParams->ImageBase + ImportDesc->FirstThunk);
+
+			HMODULE hModule = LoaderParams->fnLoadLibraryA((LPCSTR)LoaderParams->ImageBase + ImportDesc->Name);
+
+			if (!hModule)
+				return FALSE;
+
+			while (OrigFirstThunk->u1.AddressOfData)
+			{
+				if (OrigFirstThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG)
+				{
+					// Import by ordinal
+					DWORD Function = (DWORD)LoaderParams->fnGetProcAddress(hModule,
+						(LPCSTR)(OrigFirstThunk->u1.Ordinal & 0xFFFF));
+
+					if (!Function)
+						return FALSE;
+
+					FirstThunk->u1.Function = Function;
+				}
+				else
+				{
+					// Import by name
+					PIMAGE_IMPORT_BY_NAME pIBN = (PIMAGE_IMPORT_BY_NAME)((LPBYTE)LoaderParams->ImageBase + OrigFirstThunk->u1.AddressOfData);
+					DWORD Function = (DWORD)LoaderParams->fnGetProcAddress(hModule, (LPCSTR)pIBN->Name);
+					if (!Function)
+						return FALSE;
+
+					FirstThunk->u1.Function = Function;
+				}
+				OrigFirstThunk++;
+				FirstThunk++;
+			}
+			ImportDesc++;
+		}
+
+		// if the dll has an entrypoint: 
+		if (LoaderParams->NtHeaders->OptionalHeader.AddressOfEntryPoint)
+		{
+			dllmain EntryPoint = (dllmain)((LPBYTE)LoaderParams->ImageBase + LoaderParams->NtHeaders->OptionalHeader.AddressOfEntryPoint);
+			return EntryPoint((HMODULE)LoaderParams->ImageBase, DLL_PROCESS_ATTACH, NULL); // Call the entry point 
+		}
+
+		return true;
+	}
+
+	// this is used to calculate the size of libraryloader function
+	DWORD WINAPI stub()
+	{
+		return 0;
+	}
+	BOOL MemInjectDll(HANDLE hProcess, const std::wstring & dll_path)
+	{
+		HANDLE hDll = CreateFile(dll_path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+		if (hDll == INVALID_HANDLE_VALUE || hDll == NULL)
+			return FALSE;
+		DWORD FileSize = GetFileSize(hDll, NULL);
+		LPVOID FileBuffer = VirtualAlloc(NULL, FileSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+		DWORD lpNumberOfBytesRead = 0;
+		ReadFile(hDll, FileBuffer, FileSize, &lpNumberOfBytesRead, NULL);
+		CloseHandle(hDll);
+
+
+		// Target Dll's headers:
+		PIMAGE_DOS_HEADER DosHeader = (PIMAGE_DOS_HEADER)FileBuffer;
+		PIMAGE_NT_HEADERS Ntheaders = (PIMAGE_NT_HEADERS)((LPBYTE)FileBuffer + DosHeader->e_lfanew);
+
+
+
+		// Allocate memory for the dll in target process: 
+		LPVOID Executablelmage = VirtualAllocEx(hProcess, 0, Ntheaders->OptionalHeader.SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+		// copy headers to target process:
+		WriteProcessMemory(hProcess, Executablelmage, FileBuffer, Ntheaders->OptionalHeader.SizeOfHeaders, NULL);
+
+		PIMAGE_SECTION_HEADER SectHeader = (PIMAGE_SECTION_HEADER)(Ntheaders + 1);
+
+		// copy sections of the dll to target process:
+		for (int i = 0; i < Ntheaders->FileHeader.NumberOfSections; i++)
+		{
+			WriteProcessMemory(
+				hProcess,
+				(PVOID)((LPBYTE)Executablelmage + SectHeader[i].VirtualAddress),
+				(PVOID)((LPBYTE)FileBuffer + SectHeader[i].PointerToRawData),
+				SectHeader[i].SizeOfRawData,
+				NULL
+				);
+		}
+
+		// initialize the parameters for LibraryLoader():
+		loaderdata LoaderParams;
+		LoaderParams.ImageBase = Executablelmage;
+		LoaderParams.NtHeaders = (PIMAGE_NT_HEADERS)((LPBYTE)Executablelmage + DosHeader->e_lfanew);
+
+		LoaderParams.BaseReloc = (PIMAGE_BASE_RELOCATION)((LPBYTE)Executablelmage +
+			Ntheaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
+		LoaderParams.ImportDir = (PIMAGE_IMPORT_DESCRIPTOR)((LPBYTE)Executablelmage +
+			Ntheaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+
+		LoaderParams.fnLoadLibraryA = LoadLibraryA;
+		LoaderParams.fnGetProcAddress = GetProcAddress;
+
+		//TODO: Does not work with debug build as the incrmental linker creates a lot of trampoline functions hence the pointer to the 
+		//TODO: function points to the trampoline and not the'actual' function. This causes the wrong code and size to be copied!
+		// Allocate Memory for the loader code:
+		DWORD LoaderCodeSize = (DWORD)stub - (DWORD)LibraryLoader;
+		DWORD LoaderTotalSize = LoaderCodeSize + sizeof(loaderdata);
+		LPVOID LoaderMemory = VirtualAllocEx(hProcess, NULL, LoaderTotalSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+		// Write the loader parameters to the process
+		WriteProcessMemory(hProcess, LoaderMemory, &LoaderParams, sizeof(loaderdata), 0);
+
+		// write the loader code to target process
+		WriteProcessMemory(hProcess, (PVOID)((loaderdata*)LoaderMemory + 1), LibraryLoader, LoaderCodeSize, NULL);
+
+		// create remote thread to execute the loader code:
+		//	HANDLE hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)((loaderdata*)LoaderMemory + 1), LoaderMemory, 0, NULL);
+		HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)((loaderdata*)LoaderMemory + 1), LoaderMemory, 0, NULL);
+
+		// 		std::cout << "Address of Loader: " << std::hex << LoaderMemory << std::endl;
+		// 		std::cout << "Address of Image: " << std::hex << Executablelmage << std::endl;
+		// 		std::cout << "Press any key, to exit!" << std::endl;
+
+		// Wait for the loader to finish executing
+		WaitForSingleObject(hThread, INFINITE);
+		VirtualFreeEx(hProcess, LoaderMemory, 0, MEM_RELEASE);
+		return TRUE;
+	}
+
+
+
+	}
+
 

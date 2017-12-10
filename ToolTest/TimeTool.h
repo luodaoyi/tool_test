@@ -4,6 +4,5 @@
 
 namespace time_tool
 {
-
-	std::time_t GetTimeFromString(const std::string & s, const char * format_str);
+	std::time_t GetTimeFromString(const std::wstring & s);
 }

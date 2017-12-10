@@ -24,5 +24,9 @@ namespace process_tool
 		DWORD MemLoadLibraryA(const char *FilePath, HANDLE hTargetHandle);
 	}
 
+
+	BOOL MemInjectDll(HANDLE hProcess, const std::wstring & dll_path);
+
+
 	BOOL GetProcessExePath(DWORD dwPid, std::wstring & full_path);
 }

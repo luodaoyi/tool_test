@@ -16,6 +16,7 @@ namespace file_tools
 	BOOL ReadUnicodeFile(_In_ CONST std::wstring& wsPath, _Out_ std::wstring& wsContent);
 	BOOL WriteUnicodeFile(const std::wstring & file_name, const std::wstring & wsContent);
 	BOOL  AppendUnicodeFile(_In_ CONST std::wstring& cwsPath, _In_ CONST std::wstring& cwsContent);
+	BOOL ReadFile(const std::wstring & file_name, std::vector<char>  &content);
 }
 
 

@@ -55,6 +55,7 @@ namespace string_tool
 	size_t	GetHash(const std::wstring& wstr);
 
 	bool IsUTF8String(const char* str, int length);
+	std::wstring GetBufferMd5(const char * buffer, size_t len);
 
 
 }

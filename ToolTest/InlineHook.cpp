@@ -23,7 +23,7 @@ bool CInlineHook::Hook()
 {
 	if (m_has_hook)
 		return true;
-	if (!m_HookAddr || !m_HookAddr)
+	if (!m_HookAddr || !m_MyFuncAddr)
 		return false;
 
 	if (*(BYTE*)m_HookAddr == 0xe9)

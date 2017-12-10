@@ -116,13 +116,15 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_PATH)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(BOOST_PATH)\stage\lib\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -169,6 +171,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="HandleMy.h" />
     <ClInclude Include="TimeTool.h" />
+    <ClInclude Include="Verification.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmTool.cpp" />
@@ -194,6 +197,7 @@
     <ClCompile Include="TimeTool.cpp" />
     <ClCompile Include="ToolTest.cpp" />
     <ClCompile Include="HandleMy.cpp" />
+    <ClCompile Include="Verification.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

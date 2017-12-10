@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <locale>
 #include <codecvt>
-
+#include <wincrypt.h>
 namespace string_tool
 {
 
@@ -154,7 +154,92 @@ namespace string_tool
 		return nBytes == 0;
 	}
 
+#define BUFMD5SIZE 1024
+#define MD5LEN  16
+	std::wstring GetBufferMd5(const char * buffer, size_t len)
+	{
+		std::wstring ret = L"";
+		if (len <= 0)
+			throw std::length_error("buffer size is error!");
+		
+		// Get handle to the crypto provider
+		HCRYPTPROV hProv = 0;
+		if (!CryptAcquireContext(&hProv,
+			NULL,
+			NULL,
+			PROV_RSA_FULL,
+			CRYPT_VERIFYCONTEXT))
+		{
+			DWORD dwStatus = GetLastError();
+			throw std::exception("CryptAcquireContext failed");
+		}
 
 
+		HCRYPTHASH hHash = 0;
+		if (!CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash))
+		{
+			DWORD dwStatus = GetLastError();
+			CryptReleaseContext(hProv, 0);
+			throw std::exception("CryptAcquireContext failed");
+			return FALSE;
+		}
 
+
+		int nCurPos = 0;
+		int nRemain = len;
+		DWORD cbRead = 0;
+		BYTE rgbFile[BUFMD5SIZE];
+		while (nRemain > 0)
+		{
+			//bResult = ReadFile(hFile, rgbFile, BUFMD5SIZE, &cbRead, NULL)
+			if (nRemain > BUFMD5SIZE)
+			{
+				memcpy(rgbFile, buffer, BUFMD5SIZE);
+				nRemain = nRemain - BUFMD5SIZE;
+				cbRead = BUFMD5SIZE;
+			}
+			else
+			{
+				memcpy(rgbFile, buffer, nRemain);
+				cbRead = nRemain;
+				nRemain = 0;
+			}
+
+			if (!CryptHashData(hHash, rgbFile, cbRead, 0))
+			{
+				DWORD dwStatus = GetLastError();
+				CryptDestroyHash(hHash);
+				CryptReleaseContext(hProv, 0);
+				throw std::exception("CryptHashData failed!");
+			}
+		}
+
+		DWORD cbHash = MD5LEN;
+		BYTE rgbHash[MD5LEN];
+		if (CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0))
+		{
+			//printf("MD5 hash of file %s is: ", filename);
+			CHAR rgbDigits[] = "0123456789abcdef";
+			for (DWORD i = 0; i < cbHash; i++)
+			{
+				//printf("%c%c", rgbDigits[rgbHash[i] >> 4],rgbDigits[rgbHash[i] & 0xf]);
+				wchar_t szBuf[10] = { 0 };
+				swprintf_s(szBuf, 10, L"%c%c", rgbDigits[rgbHash[i] >> 4], rgbDigits[rgbHash[i] & 0xf]);
+				ret += szBuf;
+			}
+		}
+		else
+		{
+			DWORD dwStatus = GetLastError();
+			CryptDestroyHash(hHash);
+			CryptReleaseContext(hProv, 0);
+			throw std::exception("CryptGetHashParam failed!");
+		}
+
+		CryptDestroyHash(hHash);
+		CryptReleaseContext(hProv, 0);
+
+		return ret;
+	}
+	
 }
