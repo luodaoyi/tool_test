@@ -6,6 +6,7 @@
 #include <locale>
 #include <codecvt>
 #include <wincrypt.h>
+#include "DebugOutput.h"
 namespace string_tool
 {
 
@@ -240,6 +241,27 @@ namespace string_tool
 		CryptReleaseContext(hProv, 0);
 
 		return ret;
+	}
+
+
+	wchar_t *  wstrcpy_my(wchar_t * strDest, const wchar_t * strSrc, size_t len)
+	{
+		size_t	i = 0;
+		LPWSTR	pDest = strDest;
+
+		__try
+		{
+			while (*strSrc != '\0' && i++ < len)//空格是32,结束是0
+				*strDest++ = *strSrc++;
+
+			*strDest = '\0';//将'\0'放入到里面
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			//LOG_CF(CLog::em_Log_Type::em_Log_Type_Exception, L"wstrcpy_my发生了异常");
+			OutputDebugStr(L"!!!wstrcpy_my异常");
+		}
+		return pDest;
 	}
 	
 }
