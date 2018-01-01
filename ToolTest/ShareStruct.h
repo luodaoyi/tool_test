@@ -46,6 +46,11 @@ public:
 		return m_data_ptr;
 	}
 
+	const TShareType * GetSharePtr() const
+	{
+		return m_data_ptr;
+	}
+
 	BOOL CreateShare(LPCWSTR map_name)
 	{
 		if (!map_name || wcslen(map_name) == 0)

@@ -7,6 +7,7 @@
 #include <codecvt>
 #include <wincrypt.h>
 #include "DebugOutput.h"
+#include <memory>
 namespace string_tool
 {
 
@@ -263,5 +264,17 @@ namespace string_tool
 		}
 		return pDest;
 	}
-	
+
+	/*
+	std::string string_format(const char *fmt, ...)
+	{
+		va_list args;
+		va_start(args, fmt);
+		int result = vsnprintf_s(NULL, 0, fmt, args);
+		std::unique_ptr<char[]> buffer(new char[result + 1]);
+		vsnprintf(buffer.get(), result + 1, fmt, args);
+		va_end(args);=
+		return std::string(buffer.get());
+	}
+	*/
 }

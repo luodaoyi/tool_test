@@ -277,7 +277,12 @@ namespace file_tools
 		return TRUE;
 	}
 	
-
+	BOOL FileExist(const std::wstring & file_name)
+	{
+		return PathFileExists(file_name.c_str());
+	}
 
 }
+
+
 

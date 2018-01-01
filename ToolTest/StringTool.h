@@ -4,6 +4,9 @@
 using std::wstring;
 using std::string;
 #include <vector>
+
+#include <stdio.h>
+
 using std::vector;
 
 namespace string_tool
@@ -59,4 +62,7 @@ namespace string_tool
 
 	wchar_t *  wstrcpy_my(wchar_t * strDest, const wchar_t * strSrc, size_t len);
 
+
+	//std::string string_format(const char *fmt, ...);
 }
+
