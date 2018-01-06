@@ -19,6 +19,7 @@ namespace process_tool
 	DWORD GetWindowThreadID(HWND hWnd);
 	DWORD GetProcessCount(const std::wstring & exe_name);
 
+
 	namespace mem_inject
 	{
 		DWORD MemLoadLibraryA(const char *FilePath, HANDLE hTargetHandle);

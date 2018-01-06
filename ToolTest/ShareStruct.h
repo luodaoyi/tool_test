@@ -3,6 +3,8 @@
 #include <windows.h>
 #include "DebugOutput.h"
 #include "SystemTool.h"
+
+
 template<typename TShareType>
 class CShareStruct
 {

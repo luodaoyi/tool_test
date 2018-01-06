@@ -31,6 +31,6 @@ public:
 
 	operator PHANDLE() { return &m_Handle; }
 private:
-	HANDLE m_Handle;
+	HANDLE m_Handle = NULL;
 };
 
