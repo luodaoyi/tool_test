@@ -658,7 +658,7 @@ namespace process_tool
 	}
 
 
-	DWORD GetPidFromExeName(const std::wstring & szExeName, DWORD ParentId)
+	DWORD GetPidFromExeName(const std::wstring & szExeName,const  DWORD ParentId)
 	{
 		auto pid_list = GetPidsFromExeName(szExeName, ParentId);
 		if (pid_list.size() > 0)
@@ -667,7 +667,7 @@ namespace process_tool
 			return NULL;
 	}
 
-	std::vector<DWORD> GetPidsFromExeName(const std::wstring & szExeName, DWORD ParentId )
+	std::vector<DWORD> GetPidsFromExeName(const std::wstring & szExeName,const  DWORD ParentId )
 	{
 		std::vector<DWORD> ret_pid_list;
 		HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -683,9 +683,10 @@ namespace process_tool
 		{
 			wstring strExeFileName = std::wstring(info.szExeFile);
 			transform(strExeFileName.begin(), strExeFileName.end(), strExeFileName.begin(), tolower);
-			if (strExeFileName == strExeNameTerminate && (ParentId == 0 || ParentId == info.th32ParentProcessID))
+			if (strExeFileName == strExeNameTerminate )
 			{
-				ret_pid_list.push_back(info.th32ProcessID);
+				if (ParentId == 0 || ParentId == info.th32ParentProcessID)
+					ret_pid_list.push_back(info.th32ProcessID);
 			}
 			else
 			{
@@ -693,9 +694,10 @@ namespace process_tool
 				{
 					strExeFileName = std::wstring(info.szExeFile);
 					transform(strExeFileName.begin(), strExeFileName.end(), strExeFileName.begin(), tolower);
-					if (strExeFileName == strExeNameTerminate && (ParentId == 0 || ParentId == info.th32ParentProcessID))
+					if (strExeFileName == strExeNameTerminate)
 					{
-						ret_pid_list.push_back(info.th32ProcessID);
+						if (ParentId == 0 || ParentId == info.th32ParentProcessID)
+							ret_pid_list.push_back(info.th32ProcessID);
 					}
 				}
 			}
