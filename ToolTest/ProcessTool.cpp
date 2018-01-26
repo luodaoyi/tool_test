@@ -604,7 +604,7 @@ namespace process_tool
 	}
 
 
-	BOOL StartProcess(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD & Pid,BOOL bInherit, _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread )
+	BOOL StartProcess(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid,BOOL bInherit, _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread )
 	{
 		STARTUPINFO si = { 0 };
 		PROCESS_INFORMATION pi = { 0 };
@@ -622,7 +622,8 @@ namespace process_tool
 				::CloseHandle(pi.hThread);
 			else
 				*phThread = pi.hThread;
-			Pid = pi.dwProcessId;
+			if (Pid)
+				*Pid = pi.dwProcessId;
 			return TRUE;
 		}
 	}
@@ -769,7 +770,12 @@ namespace process_tool
 		return GetWindowThreadProcessId(hWnd, NULL);
 	}
 
-
+	DWORD GetWindowProcessID(HWND hWnd)
+	{
+		DWORD pid = 0;
+		GetWindowThreadProcessId(hWnd,&pid);
+		return pid;
+	}
 
 
 

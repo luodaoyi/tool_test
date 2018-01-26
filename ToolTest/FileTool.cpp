@@ -265,15 +265,18 @@ namespace file_tools
 		_wfopen_s(&pFile, file_name.c_str(), L"rb");
 		if (pFile == nullptr)
 		{
-			OutputDebugStr(L"AppendUnicodeFile Fiald! Path:%s", file_name.c_str());
+			OutputDebugStr(L"ReadFile Fiald! Path:%s", file_name.c_str());
 			return FALSE;
 		}
 
 		fseek(pFile, 0, SEEK_END);
 		auto size = ftell(pFile);
+		fseek(pFile, 0, SEEK_SET);
 		content.resize(size);
-		fread(content.data(), 1, size, pFile);
+		auto read_size = fread(content.data(), 1, size, pFile);
 		fclose(pFile);
+		if (read_size == 0)
+			OutputDebugStr(L"ReadFile ReadSize = 0");
 		return TRUE;
 	}
 	

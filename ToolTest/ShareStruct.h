@@ -131,7 +131,11 @@ private:
 			else
 			{
 				if (m_share_type == CREATOR)
+				{
+					ZeroMemory(m_data_ptr, sizeof(TShareType));
 					new (m_data_ptr)TShareType();//调用构造函数
+				}
+					
 				m_is_opening = TRUE;
 				return TRUE;
 			}
