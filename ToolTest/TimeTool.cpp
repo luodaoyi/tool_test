@@ -41,4 +41,11 @@ namespace time_tool
 		return time_buffer;
 	}
 
+	SYSTEMTIME  GetCurTime()
+	{
+		SYSTEMTIME cur_local_time;
+		GetLocalTime(&cur_local_time);
+		return cur_local_time;
+	}
+
 }
