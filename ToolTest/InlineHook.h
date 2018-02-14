@@ -33,5 +33,7 @@ private:
 	void WriteHook();
 
 	bool m_has_hook = false;
+	bool m_hook_addr_is_call =false;
+	DWORD m_hook_addr_call_addr = 0;
 };
 

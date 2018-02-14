@@ -1,7 +1,8 @@
 #pragma once
 
 #include "commom_include.h"
-
+#include <TlHelp32.h>
+#include <functional>
 namespace process_tool
 { 
 	BOOL IsProcessRunning(DWORD dwPid);
@@ -10,7 +11,7 @@ namespace process_tool
 	BOOL StartProcess(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid = NULL ,BOOL bInherit = FALSE,_Out_ PHANDLE phProcess = NULL, _Out_ PHANDLE phThread = NULL);
 	BOOL StartProcessAndInjectDllAndCallDllFunc(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, const std::wstring & dll_path, const std::wstring & dll_func_name, _Out_ DWORD & Pid, _Out_ PHANDLE phProcess = NULL, _Out_ PHANDLE phThread = NULL);
 	DWORD GetPidFromExeName(const std::wstring & szExeName, const DWORD ParentPid = 0);
-	std::vector<DWORD> GetPidsFromExeName(const std::wstring & szExeName, const DWORD dwParendId = 0);
+	std::vector<PROCESSENTRY32>  GetPidsFromExeName(const std::wstring & szExeName, const DWORD dwParendId = 0);
 	BOOL IsMutiInstance(const std::wstring & name);//¼ì²â¶à¿ª
 	BOOL KillProcess(DWORD dwPid);
 	BOOL InjectDll(HANDLE hProcess, const std::wstring & dll_path, const std::wstring & dll_func_name, HMODULE * hDllModule = NULL);
@@ -19,6 +20,7 @@ namespace process_tool
 	DWORD GetWindowThreadID(HWND hWnd);
 	DWORD GetWindowProcessID(HWND hWnd);
 	DWORD GetProcessCount(const std::wstring & exe_name);
+	std::vector<PROCESSENTRY32> GetPidsByCondition(std::function<bool(const PROCESSENTRY32 & process_info)> fnCheck);
 
 
 	namespace mem_inject
