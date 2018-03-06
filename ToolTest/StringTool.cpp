@@ -278,6 +278,18 @@ namespace string_tool
 	}
 	*/
 
+	bool ComparStringArray(const std::vector<std::wstring> & s1, const std::vector<std::wstring > & s2)
+	{
+		if (s1.size() != s2.size())
+			return false;
+		for (auto & iter : s1)
+		{
+			if (std::find(s2.begin(), s2.end(), iter) == s2.end())
+				return false;
+		}
+		return true;
+	}
+
 
 
 }

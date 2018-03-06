@@ -285,6 +285,24 @@ namespace file_tools
 		return PathFileExists(file_name.c_str());
 	}
 
+	BOOL  ReadAsciiFileLen(_In_ CONST std::wstring& cwsPath, _Out_ ULONG& ulFileLen)
+	{
+		FILE* pFile = nullptr;
+		_wfopen_s(&pFile, cwsPath.c_str(), L"rb");
+		if (pFile == nullptr)
+		{
+			OutputDebugStr(L"ReadScriptFile Fiald! Path:%s", cwsPath.c_str());
+			return FALSE;
+		}
+
+		fseek(pFile, 0, SEEK_END);
+		LONG lLen = ftell(pFile);
+		fclose(pFile);
+
+		ulFileLen = lLen;
+		return TRUE;
+	}
+
 }
 
 

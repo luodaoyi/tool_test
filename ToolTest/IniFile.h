@@ -6,7 +6,10 @@ class CIniFile
 {
 public:
 	CIniFile(const std::wstring & file_name);
+	CIniFile();
 	~CIniFile();
+
+	void SetFileName(const std::wstring & file_name);
 
 	std::wstring GetIniStr(const std::wstring & key,const std::wstring & section,const std::wstring & default_value = L"");
 	void WriteIniStr(const std::wstring & key, const std::wstring & value,const std::wstring & section);
