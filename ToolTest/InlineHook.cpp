@@ -35,6 +35,13 @@ bool CInlineHook::Hook()
 		else
 			m_RealHookAddr = SrcJumpAddr;
 	}
+	else if (*(BYTE*)m_HookAddr == 0xe8)
+	{
+		//说明HOOK的那个地址正常是call xxxxxxx，这样自动填充的就会有问题call后面的xxxxxx得重新计算
+		m_hook_addr_is_call = true;
+		m_hook_addr_call_addr = *(DWORD*)(m_HookAddr + 1) + 0x5 + m_HookAddr;
+		m_RealHookAddr = m_HookAddr;
+	}
 	else
 		m_RealHookAddr = m_HookAddr;
 
@@ -61,7 +68,16 @@ bool CInlineHook::Hook()
 		const DWORD dwNopPos = GetMyNakedFunctNopPos();
 		if (dwNopPos == 0)
 			return false;
-		WriteProcessMemory(::GetCurrentProcess(), (LPVOID)dwNopPos, (LPCVOID)m_SavedSrcCode, m_SaveSrcCodeSize, NULL);
+		if (!m_hook_addr_is_call)
+			WriteProcessMemory(::GetCurrentProcess(), (LPVOID)dwNopPos, (LPCVOID)m_SavedSrcCode, m_SaveSrcCodeSize, NULL);
+		else
+		{
+			//这个机器码得计算 JMP的地址(88881234) – 代码地址(010073bb) – 5（字节） = 机器码跳转地址(E9 87879e74);
+			JMPCODE_ jmpCode;
+			jmpCode.jmp = 0xe8;
+			jmpCode.addr = m_hook_addr_call_addr - dwNopPos - 5;
+			::WriteProcessMemory(GetCurrentProcess(), (LPVOID)dwNopPos, &jmpCode, sizeof(JMPCODE_), NULL);
+		}
 
 		//下面开始跳转到原函数的代码
 		const DWORD dwNextCodeAddr = dwNopPos + m_SaveSrcCodeSize;

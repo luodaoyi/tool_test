@@ -161,9 +161,12 @@
     <ClInclude Include="InlineHook.h" />
     <ClInclude Include="Language.h" />
     <ClInclude Include="NonCopyable.h" />
+    <ClInclude Include="PipeClient.h" />
+    <ClInclude Include="PipeServer.h" />
     <ClInclude Include="ProcessTool.h" />
     <ClInclude Include="PublicTool.h" />
     <ClInclude Include="ResManager.h" />
+    <ClInclude Include="ScreeShot.h" />
     <ClInclude Include="ShareStruct.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringTool.h" />
@@ -171,6 +174,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="HandleMy.h" />
     <ClInclude Include="TimeTool.h" />
+    <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="Verification.h" />
   </ItemGroup>
   <ItemGroup>
@@ -183,8 +187,11 @@
     <ClCompile Include="IniFile.cpp" />
     <ClCompile Include="InlineHook.cpp" />
     <ClCompile Include="Language.cpp" />
+    <ClCompile Include="PipeClient.cpp" />
+    <ClCompile Include="PipeServer.cpp" />
     <ClCompile Include="ProcessTool.cpp" />
     <ClCompile Include="PublicTool.cpp" />
+    <ClCompile Include="ScreeShot.cpp" />
     <ClCompile Include="ShareStruct.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -195,6 +202,7 @@
     <ClCompile Include="StringTool.cpp" />
     <ClCompile Include="SystemTool.cpp" />
     <ClCompile Include="TimeTool.cpp" />
+    <ClCompile Include="tinyxml2.cpp" />
     <ClCompile Include="ToolTest.cpp" />
     <ClCompile Include="HandleMy.cpp" />
     <ClCompile Include="Verification.cpp" />

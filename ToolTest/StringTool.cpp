@@ -277,4 +277,7 @@ namespace string_tool
 		return std::string(buffer.get());
 	}
 	*/
+
+
+
 }

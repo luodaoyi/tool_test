@@ -62,7 +62,15 @@ namespace string_tool
 
 	wchar_t *  wstrcpy_my(wchar_t * strDest, const wchar_t * strSrc, size_t len);
 
+	template<typename T = std::wstring>
+	void ReplaceStr(T &szContent, const T &szSrc, const T &szDst)
+	{
+		T::size_type	pos = 0;
 
-	//std::string string_format(const char *fmt, ...);
+		while ((pos = szContent.find(szSrc, pos)) != T::npos) {
+			szContent.replace(pos, szSrc.size(), szDst);
+			pos++;
+		}
+	}
 }
 

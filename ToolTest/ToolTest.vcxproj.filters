@@ -96,6 +96,18 @@
     <ClInclude Include="Verification.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ScreeShot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyxml2.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="PipeClient.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="PipeServer.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -154,6 +166,18 @@
     </ClCompile>
     <ClCompile Include="Verification.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreeShot.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml2.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="PipeClient.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="PipeServer.cpp">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

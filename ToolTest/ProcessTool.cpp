@@ -604,7 +604,7 @@ namespace process_tool
 	}
 
 
-	BOOL StartProcess(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD & Pid,BOOL bInherit, _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread )
+	BOOL StartProcess(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid,BOOL bInherit, _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread )
 	{
 		STARTUPINFO si = { 0 };
 		PROCESS_INFORMATION pi = { 0 };
@@ -622,7 +622,8 @@ namespace process_tool
 				::CloseHandle(pi.hThread);
 			else
 				*phThread = pi.hThread;
-			Pid = pi.dwProcessId;
+			if (Pid)
+				*Pid = pi.dwProcessId;
 			return TRUE;
 		}
 	}
@@ -658,45 +659,44 @@ namespace process_tool
 	}
 
 
-	DWORD GetPidFromExeName(const std::wstring & szExeName, DWORD ParentId)
+	DWORD GetPidFromExeName(const std::wstring & szExeName,const  DWORD ParentId)
 	{
 		auto pid_list = GetPidsFromExeName(szExeName, ParentId);
 		if (pid_list.size() > 0)
-			return pid_list[0];
+			return pid_list[0].th32ProcessID;
 		else
 			return NULL;
 	}
 
-	std::vector<DWORD> GetPidsFromExeName(const std::wstring & szExeName, DWORD ParentId )
+	std::vector<PROCESSENTRY32> GetPidsFromExeName(const std::wstring & szExeName, const  DWORD ParentId)
 	{
-		std::vector<DWORD> ret_pid_list;
+		std::wstring search_exe_name_lower;
+		std::transform(szExeName.begin(), szExeName.end(), std::back_inserter(search_exe_name_lower) , tolower);
+		return GetPidsByCondition([& search_exe_name_lower, ParentId](const PROCESSENTRY32 & process_info){
+			std::wstring process_exe_name = process_info.szExeFile;
+			std::transform(process_exe_name.begin(), process_exe_name.end(), process_exe_name.begin(), tolower);
+			return process_exe_name == search_exe_name_lower && (ParentId == 0 || ParentId == process_info.th32ParentProcessID);
+		});
+	}
+
+	std::vector<PROCESSENTRY32> GetPidsByCondition(std::function<bool(const PROCESSENTRY32 & process_info)> fnCheck)
+	{
+		std::vector<PROCESSENTRY32> ret_pid_list;
 		HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 		SetResDeleter(handle, [](HANDLE & h){CloseHandle(h); });
 		BOOL ret = FALSE;
 		PROCESSENTRY32 info;//声明进程信息变量
 		info.dwSize = sizeof(PROCESSENTRY32);
-		int i = 0;
-		wstring strExeNameTerminate = std::wstring(szExeName);
-		std::transform(strExeNameTerminate.begin(), strExeNameTerminate.end(), strExeNameTerminate.begin(), tolower);
-
 		if (Process32First(handle, &info))
 		{
-			wstring strExeFileName = std::wstring(info.szExeFile);
-			transform(strExeFileName.begin(), strExeFileName.end(), strExeFileName.begin(), tolower);
-			if (strExeFileName == strExeNameTerminate && (ParentId == 0 || ParentId == info.th32ParentProcessID))
-			{
-				ret_pid_list.push_back(info.th32ProcessID);
-			}
+			if (fnCheck(info))
+				ret_pid_list.push_back(info);
 			else
 			{
 				while (Process32Next(handle, &info) != FALSE)
 				{
-					strExeFileName = std::wstring(info.szExeFile);
-					transform(strExeFileName.begin(), strExeFileName.end(), strExeFileName.begin(), tolower);
-					if (strExeFileName == strExeNameTerminate && (ParentId == 0 || ParentId == info.th32ParentProcessID))
-					{
-						ret_pid_list.push_back(info.th32ProcessID);
-					}
+					if (fnCheck(info))
+						ret_pid_list.push_back(info);
 				}
 			}
 		}
@@ -767,7 +767,12 @@ namespace process_tool
 		return GetWindowThreadProcessId(hWnd, NULL);
 	}
 
-
+	DWORD GetWindowProcessID(HWND hWnd)
+	{
+		DWORD pid = 0;
+		GetWindowThreadProcessId(hWnd,&pid);
+		return pid;
+	}
 
 
 

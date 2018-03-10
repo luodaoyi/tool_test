@@ -269,7 +269,6 @@ namespace file_tools
 		SetResDeleter(file_handle, [](HANDLE & p){::CloseHandle(p); });
 		LARGE_INTEGER  file_size = { 0 };
 		GetFileSizeEx(file_handle, &file_size);
-
 		content.resize(file_size.LowPart);
 		DWORD read_types = 0;
 		::ReadFile(file_handle, content.data(), file_size.LowPart, &read_types, NULL);
@@ -282,7 +281,7 @@ namespace file_tools
 	{
 		return PathFileExists(file_name.c_str());
 	}
-	BOOL WriteFile(const std::wstring & file_namme, char * buffer, size_t size)
+	BOOL WriteFile(const std::wstring & file_namme, const char * buffer, size_t size)
 	{
 		HANDLE file_handle = ::CreateFile(file_namme.c_str(), GENERIC_WRITE, 0, NULL, TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (file_handle == INVALID_HANDLE_VALUE)

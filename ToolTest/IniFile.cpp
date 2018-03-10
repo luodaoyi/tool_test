@@ -24,12 +24,16 @@ CIniFile::CIniFile(const std::wstring & file_name)
 			std::wstring file_path = file_tools::GetPathByPathFile(file_name);
 			if (!file_path.empty() && !::PathIsDirectory(file_path.c_str()))
 				file_tools::CreateDirectoryNested(file_path);
+
+			file_tools::CreateUnicodeTextFile(file_name);
 		}
 	}
 	else
 	{
 		//单个文件 加上当前路径
 		m_file_path_name = file_tools::GetCurrentAppPath() + file_name;
+		if (!PathFileExists(m_file_path_name.c_str()))
+			file_tools::CreateUnicodeTextFile(m_file_path_name);
 	}
 
 }
