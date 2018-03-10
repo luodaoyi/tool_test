@@ -290,12 +290,32 @@ namespace file_tools
 				file_handle = ::CreateFile(file_namme.c_str(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
 		}
 
+
 		if (file_handle == INVALID_HANDLE_VALUE)
 			return FALSE;
 		SetResDeleter(file_handle, [](HANDLE & h){::CloseHandle(h); });
 		DWORD write_size = 0;
 		return ::WriteFile(file_handle, buffer, size, &write_size, NULL);
 	}
+
+	BOOL  ReadAsciiFileLen(_In_ CONST std::wstring& cwsPath, _Out_ ULONG& ulFileLen)
+	{
+		FILE* pFile = nullptr;
+		_wfopen_s(&pFile, cwsPath.c_str(), L"rb");
+		if (pFile == nullptr)
+		{
+			OutputDebugStr(L"ReadScriptFile Fiald! Path:%s", cwsPath.c_str());
+			return FALSE;
+		}
+
+		fseek(pFile, 0, SEEK_END);
+		LONG lLen = ftell(pFile);
+		fclose(pFile);
+
+		ulFileLen = lLen;
+		return TRUE;
+	}
+
 }
 
 

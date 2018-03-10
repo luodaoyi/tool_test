@@ -72,5 +72,7 @@ namespace string_tool
 			pos++;
 		}
 	}
+
+	bool ComparStringArray(const std::vector<std::wstring> & s1, const std::vector<std::wstring > & s2);
 }
 

@@ -8,14 +8,20 @@
 
 #include "DebugOutput.h"
 
-CIniFile::CIniFile(const std::wstring & file_name)
+
+CIniFile::CIniFile()
+{
+
+}
+
+void CIniFile::SetFileName(const std::wstring & file_name)
 {
 	if (file_name.empty())
 	{
 		OutputDebugStr(L"!!!file_name is empty");
 		return;
 	}
-	if(file_tools::IsValidFilePath(file_name))
+	if (file_tools::IsValidFilePath(file_name))
 	{
 		//如果是带目录的文件路径 则先创建目录
 		m_file_path_name = file_name;
@@ -35,7 +41,11 @@ CIniFile::CIniFile(const std::wstring & file_name)
 		if (!PathFileExists(m_file_path_name.c_str()))
 			file_tools::CreateUnicodeTextFile(m_file_path_name);
 	}
+}
 
+CIniFile::CIniFile(const std::wstring & file_name)
+{
+	SetFileName(file_name);
 }
 
 

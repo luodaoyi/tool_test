@@ -27,6 +27,7 @@ public:
 	static BOOL		CL_sunday(DWORD* pKey, UINT uKeyLen, BYTE* pCode, UINT uCodeLen, std::vector<int>& vlst);
 	static int		GetWord_By_Char(BYTE dwWord, DWORD* pKey, UINT uKeyLen);
 	static BOOL		CompCode(const DWORD * pCode, const BYTE * pMem, UINT uLen);
+	static DWORD GetCall(DWORD dwAddr1, DWORD dwAddr2, LPCWSTR pwszModuleName);
 #endif // _WIN64
 
 	

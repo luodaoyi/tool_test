@@ -257,4 +257,14 @@ DWORD CLSearchBase::FindBase_ByCALL(LPCSTR lpszCode, int nOffset, DWORD dwModule
 	dwCALL += nBaseOffset;
 	return asm_tool::ReadDWORD(dwCALL) & dwAddrLen;
 }
+
+DWORD CLSearchBase::GetCall(DWORD dwAddr1, DWORD dwAddr2, LPCWSTR pwszModuleName)
+{
+	DWORD dwAddr = dwAddr1 - dwAddr2 + 0x1/*0xE8*/;
+	dwAddr += (DWORD)GetModuleHandleW(pwszModuleName);
+	DWORD dwReaderAddr = asm_tool::ReadDWORD(dwAddr);
+	dwReaderAddr += 4;
+	dwReaderAddr += dwAddr;
+	return dwReaderAddr & 0xFFFFFFFF;
+}
 #endif

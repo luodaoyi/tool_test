@@ -20,6 +20,7 @@ namespace file_tools
 	BOOL FileExist(const std::wstring & file_name);
 	BOOL WriteFile(const std::wstring & file_namme, const char * buffer, size_t size);
 	BOOL CreateUnicodeTextFile(_In_ CONST std::wstring& cwsPath);
+	BOOL ReadAsciiFileLen(_In_ CONST std::wstring& cwsPath, _Out_ ULONG& ulFileLen);
 }
 
 
