@@ -15,11 +15,15 @@
 #include "DebugOutput.h"
 #include <mutex>
 
+<<<<<<< HEAD
 #include "ResManager.h"
 
 #include <tchar.h>
 
 
+=======
+#include "CLResManager.h"
+>>>>>>> ed3142f12701d435a64b63055fe02c8349d0edcb
 
 namespace file_tools
 {
@@ -266,28 +270,40 @@ namespace file_tools
 	BOOL ReadFile(const std::wstring & file_name, std::vector<char>  &content)
 	{
 
-		FILE* pFile = nullptr;
-		_wfopen_s(&pFile, file_name.c_str(), L"rb");
-		if (pFile == nullptr)
-		{
-			OutputDebugStr(L"ReadFile Fiald! Path:%s", file_name.c_str());
+		HANDLE file_handle = ::CreateFile(file_name.c_str(),
+			GENERIC_READ, FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (file_handle == INVALID_HANDLE_VALUE)
 			return FALSE;
-		}
-
-		fseek(pFile, 0, SEEK_END);
-		auto size = ftell(pFile);
-		fseek(pFile, 0, SEEK_SET);
-		content.resize(size);
-		auto read_size = fread(content.data(), 1, size, pFile);
-		fclose(pFile);
-		if (read_size == 0)
-			OutputDebugStr(L"ReadFile ReadSize = 0");
+		SetResDeleter(file_handle, [](HANDLE & p){::CloseHandle(p); });
+		LARGE_INTEGER  file_size = { 0 };
+		GetFileSizeEx(file_handle, &file_size);
+		content.resize(file_size.LowPart);
+		DWORD read_types = 0;
+		::ReadFile(file_handle, content.data(), file_size.LowPart, &read_types, NULL);
 		return TRUE;
 	}
 	
+
+
 	BOOL FileExist(const std::wstring & file_name)
 	{
 		return PathFileExists(file_name.c_str());
+	}
+	BOOL WriteFile(const std::wstring & file_namme, const char * buffer, size_t size)
+	{
+		HANDLE file_handle = ::CreateFile(file_namme.c_str(), GENERIC_WRITE, 0, NULL, TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (file_handle == INVALID_HANDLE_VALUE)
+		{
+			if (::GetLastError() == ERROR_FILE_NOT_FOUND)
+				file_handle = ::CreateFile(file_namme.c_str(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+		}
+
+
+		if (file_handle == INVALID_HANDLE_VALUE)
+			return FALSE;
+		SetResDeleter(file_handle, [](HANDLE & h){::CloseHandle(h); });
+		DWORD write_size = 0;
+		return ::WriteFile(file_handle, buffer, size, &write_size, NULL);
 	}
 
 	BOOL  ReadAsciiFileLen(_In_ CONST std::wstring& cwsPath, _Out_ ULONG& ulFileLen)
@@ -402,6 +418,7 @@ namespace file_tools
 	}
 
 }
+
 
 
 
