@@ -48,4 +48,29 @@ namespace time_tool
 		return cur_local_time;
 	}
 
+	std::wstring SecondToString(const time_t sec)
+	{
+		if (sec >= 360)
+		{
+			//大于一小时
+			int minutes = sec % 60;
+			std::wstring minutes_str;
+			if (minutes > 0)
+				minutes_str = std::to_wstring(minutes) + L"分";
+			return std::to_wstring(sec / 60) + L"时" + minutes_str;
+		}
+		else if (sec >= 60)
+		{
+			int seccond = sec % 60;
+			std::wstring seccond_str;
+			if (seccond > 0)
+				seccond_str = std::to_wstring(seccond) + L"秒";
+			return std::to_wstring(sec / 60) + L"分" + seccond_str;
+		}
+		else if (sec >= 0)
+			return std::to_wstring(sec) + L"秒";
+		else
+			return L"";
+	}
+
 }

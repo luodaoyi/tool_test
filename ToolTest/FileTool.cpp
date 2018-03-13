@@ -15,6 +15,11 @@
 #include "DebugOutput.h"
 #include <mutex>
 
+#include "ResManager.h"
+
+#include <tchar.h>
+
+
 
 namespace file_tools
 {
@@ -301,6 +306,99 @@ namespace file_tools
 
 		ulFileLen = lLen;
 		return TRUE;
+	}
+
+
+#include <Wincrypt.h>
+
+#define BUFSIZE 1024
+#define MD5LEN  16
+	std::wstring CalcFileMd5(LPCTSTR szFileName)
+	{
+		std::wstring ret_md5;
+
+		HANDLE hFile = CreateFile(szFileName,
+			GENERIC_READ,
+			FILE_SHARE_READ,
+			NULL,
+			OPEN_EXISTING,
+			FILE_FLAG_SEQUENTIAL_SCAN,
+			NULL);
+
+		if (INVALID_HANDLE_VALUE == hFile)
+		{
+			DWORD dwStatus = GetLastError();
+			OutputDebugStr(L"CalcFileMd5 CreateFile :%s Failed", szFileName);
+			return ret_md5;
+		}
+
+		SetResDeleter(hFile, [](HANDLE & h){::CloseHandle(h); });
+
+		// Get handle to the crypto provider
+		HCRYPTPROV hProv = NULL;
+		if (!CryptAcquireContext(&hProv,
+			NULL,
+			NULL,
+			PROV_RSA_FULL,
+			CRYPT_VERIFYCONTEXT))
+		{
+			DWORD dwStatus = GetLastError();
+			OutputDebugStr(L"CalcFileMd5 CryptAcquireContext failed: %d", dwStatus);
+			CloseHandle(hFile);
+			return ret_md5;
+		}
+		SetResDeleter(hProv, [](HCRYPTPROV  & h){CryptReleaseContext(h, 0); });
+
+		HCRYPTHASH hHash = NULL;
+		if (!CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash))
+		{
+			DWORD dwStatus = GetLastError();
+			OutputDebugStr( L"CryptAcquireContext failed: %d", dwStatus);
+			return ret_md5;
+		}
+		SetResDeleter(hHash, [](HCRYPTHASH &h){CryptDestroyHash(h); });
+		DWORD cbRead = 0;
+		BYTE rgbFile[BUFSIZE];
+		BOOL bResult = FALSE;
+		while (bResult = ::ReadFile(hFile, rgbFile, BUFSIZE, &cbRead, NULL))
+		{
+			if (0 == cbRead)
+				break;
+			if (!CryptHashData(hHash, rgbFile, cbRead, 0))
+			{
+				DWORD dwStatus = GetLastError();
+				OutputDebugStr(L"CryptHashData failed : %d", dwStatus);
+			}
+		}
+
+		if (!bResult)
+		{
+			DWORD dwStatus = GetLastError();
+			OutputDebugStr(L"ReadFile failed: %d", dwStatus);
+			return ret_md5;
+		}
+
+		DWORD cbHash = MD5LEN;
+		BYTE rgbHash[MD5LEN] = { 0 };
+		CHAR rgbDigits[] = "0123456789abcdef";
+		if (CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0))
+		{
+			TCHAR szMd5[256] = { 0 };
+			for (DWORD i = 0; i < cbHash; i++)
+			{
+				TCHAR szBuf[10] = { 0 };
+				_stprintf_s(szBuf, _T("%c%c"), rgbDigits[rgbHash[i] >> 4], rgbDigits[rgbHash[i] & 0xf]);
+				_tcscat_s(szMd5, szBuf);
+			}
+			ret_md5 = szMd5;
+		}
+		else
+		{
+			DWORD dwStatus = GetLastError();
+			OutputDebugStr(L"CryptGetHashParam failed: %d", dwStatus);
+			return ret_md5;
+		}
+		return ret_md5;
 	}
 
 }

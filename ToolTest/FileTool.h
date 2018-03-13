@@ -20,6 +20,7 @@ namespace file_tools
 	BOOL FileExist(const std::wstring & file_name);
 	BOOL CreateUnicodeTextFile(_In_ CONST std::wstring& cwsPath);
 	BOOL ReadAsciiFileLen(_In_ CONST std::wstring& cwsPath, _Out_ ULONG& ulFileLen);
+	std::wstring CalcFileMd5(LPCTSTR szFileName);
 }
 
 
