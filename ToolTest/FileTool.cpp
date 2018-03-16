@@ -15,15 +15,11 @@
 #include "DebugOutput.h"
 #include <mutex>
 
-<<<<<<< HEAD
+
 #include "ResManager.h"
 
 #include <tchar.h>
 
-
-=======
-#include "CLResManager.h"
->>>>>>> ed3142f12701d435a64b63055fe02c8349d0edcb
 
 namespace file_tools
 {
