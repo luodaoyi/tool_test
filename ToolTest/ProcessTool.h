@@ -5,6 +5,8 @@
 #include <functional>
 namespace process_tool
 { 
+	enum {error_process_exit_code = 100};
+
 	BOOL IsProcessRunning(DWORD dwPid);
 	BOOL InjectDll_CallFunc(DWORD dwPid,const std::wstring & dll_path,const std::wstring & dll_func_name,HMODULE  * injected_dll_module = NULL);
 	BOOL FreeRemoteDll(DWORD dwPid, HMODULE hDll);
@@ -21,7 +23,7 @@ namespace process_tool
 	DWORD GetWindowProcessID(HWND hWnd);
 	DWORD GetProcessCount(const std::wstring & exe_name);
 	std::vector<PROCESSENTRY32> GetPidsByCondition(std::function<bool(const PROCESSENTRY32 & process_info)> fnCheck);
-
+	DWORD StartProcessAndGetExitCode(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path = NULL);
 
 	namespace mem_inject
 	{

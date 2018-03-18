@@ -628,6 +628,42 @@ namespace process_tool
 		}
 	}
 
+	DWORD StartProcessAndGetExitCode(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path )
+	{
+		HANDLE process_handle = INVALID_HANDLE_VALUE;
+		HANDLE thread_handle = INVALID_HANDLE_VALUE;
+		std::wstring process_name = app_name ? app_name : cmd_line;
+		if (!StartProcess(app_name, cmd_line, cur_path, 0, 0, 0, &process_handle, &thread_handle))
+		{
+			DWORD last_error = ::GetLastError();
+			OutputDebugStr(L"创建进程%s出错,错误ID:%d", process_name.c_str(), last_error);
+			return error_process_exit_code;
+		}
+
+		SetResDeleter(process_handle, [](HANDLE & h){if(h && h != INVALID_HANDLE_VALUE) CloseHandle(h); });
+		SetResDeleter(thread_handle, [](HANDLE & h){if (h && h != INVALID_HANDLE_VALUE) CloseHandle(h); });
+
+		DWORD wait_ret = ::WaitForSingleObject(process_handle, INFINITE);
+		if (wait_ret == WAIT_OBJECT_0)
+		{
+			DWORD ret_code = error_process_exit_code;
+			if (!GetExitCodeProcess(process_handle, &ret_code))
+			{
+				DWORD last_error = 0;
+				OutputDebugStr(L"StartProcessAndGetExitCode GetExitCodeProcess Failed:%d", GetLastError());
+				return error_process_exit_code;
+			}
+			else
+				return ret_code;
+		}
+		else
+		{
+			OutputDebugStr(L"Wait Process %s Failed", process_name.c_str());
+			return error_process_exit_code;
+		}
+	}
+
+
 	BOOL StartProcessAndInjectDllAndCallDllFunc(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, const std::wstring & dll_path, const std::wstring & dll_func_name, _Out_ DWORD & Pid, _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread )
 	{
 		STARTUPINFO si = { 0 };
