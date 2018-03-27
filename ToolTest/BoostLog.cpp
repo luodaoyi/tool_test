@@ -23,6 +23,8 @@
 #include <boost/log/support/date_time.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <boost/log/sinks//debug_output_backend.hpp>
+
 
 #include "StringTool.h"
 #include "DebugOutput.h"
@@ -38,6 +40,79 @@ namespace boost_log
 	namespace keywords = boost::log::keywords;
 
 
+	template< typename CharT >
+	class basic_indexed_debug_output_backend :
+		public sinks::basic_formatted_sink_backend< CharT, sinks::concurrent_feeding >
+	{
+		//! Base type
+		typedef basic_formatted_sink_backend< CharT, sinks::concurrent_feeding > base_type;
+	private:
+		std::wstring m_pipe_name;
+		HANDLE m_pipe = INVALID_HANDLE_VALUE;
+		bool m_is_connected = false;
+		bool Connnect()
+		{
+			//先关闭之前的pipe
+			if (m_pipe && m_pipe != INVALID_HANDLE_VALUE)
+				::CloseHandle(m_pipe);
+
+			m_pipe = CreateFile(m_pipe_name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+			if (m_pipe != INVALID_HANDLE_VALUE)
+				m_is_connected = true;
+			else
+				m_is_connected = false;
+			return m_pipe != INVALID_HANDLE_VALUE;
+		}
+	public:
+		//! Character type
+		typedef typename base_type::char_type char_type;
+		//! String type to be used as a message text holder
+		typedef typename base_type::string_type string_type;
+
+	public:
+		/*!
+		* Constructor. Initializes the sink backend.
+		*/
+		BOOST_LOG_API basic_indexed_debug_output_backend(unsigned index)
+		{
+			m_pipe_name = L"\\\\.\\pipe\\zds_debug_" + std::to_wstring(index);
+			Connnect();
+		}
+		/*!
+		* Destructor
+		*/
+		BOOST_LOG_API ~basic_indexed_debug_output_backend()
+		{
+			if (m_pipe && m_pipe != INVALID_HANDLE_VALUE)
+				::CloseHandle(m_pipe);
+		}
+
+		/*!
+		* The method passes the formatted message to debugger
+		*/
+		BOOST_LOG_API void consume(boost::log::record_view const& rec, string_type const& formatted_message)
+		{
+			bool can_write = false;
+			if (!m_is_connected)
+			{
+				if (Connnect())
+					can_write = true;
+				else
+					can_write = false;
+			}
+			else
+				can_write = true;
+
+			if (!can_write)
+				return;
+
+			DWORD temp = 0;
+			if (!WriteFile(m_pipe, formatted_message.c_str(), formatted_message.size() * sizeof(char_type), &temp, NULL))
+				m_is_connected = false;
+		}
+	};
+
+
 
 	//宽字符要加模版
 	template< typename CharT, typename TraitsT >
@@ -46,8 +121,7 @@ namespace boost_log
 	{
 		static const char* const str[] =
 		{
-			"normal",
-			"notification",
+			"notice",
 			"warning",
 			"error",
 			"critical"
@@ -64,6 +138,8 @@ namespace boost_log
 	BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
 
 
+
+
 	bool is_auto_flush = false;//此变量内部使用
 	void InitBoostLog(const wchar_t * szFileName,bool auto_flush)
 	{
@@ -72,29 +148,66 @@ namespace boost_log
 			return;
 		is_init = true;
 		is_auto_flush = auto_flush;
+		logging::add_common_attributes();
+
+		logging::core::get()->add_global_attribute("ThreadID", attrs::current_thread_id());
 		boost::shared_ptr< sinks::synchronous_sink< sinks::text_file_backend > > sink = logging::add_file_log
 			(
 			szFileName,
 			keywords::open_mode = std::ios_base::app,//追加方式
 			keywords::auto_flush = is_auto_flush,
-			boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(boost::gregorian::greg_day(1)),//每月1号换日志文件
+			keywords::rotation_size = 10 * 1024 * 1024,
+			//boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(boost::gregorian::greg_day(1)),//每月1号换日志文件
 			keywords::format = expr::stream
-			<< expr::format_date_time(timestamp, "%Y-%m-%d, %H:%M:%S.%f")
-			<< " <" << severity.or_default(normal)
-			<< "> " << expr::message
+			<< expr::format_date_time(timestamp, "%Y-%m-%d, %H:%M:%S")
+			<< "[" << expr::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID") << "]"
+			<< " <" << severity.or_default(notice)<< "> " 
+			<< expr::message
 			);
-		
 		std::locale loc = boost::locale::generator()("en_US.UTF-8");
 		sink->imbue(loc);
-		logging::add_common_attributes();
-		OutputDebugStr(L"InitBoostLog Init Success!");
+		//sink->set_filter(severity >= warning);
+
+		logging::core::get()->set_filter(severity >= warning);
 	}
 
 
-
-	src::wseverity_logger< severity_level > & GetLogSrcW()
+	void InitDebugShow(unsigned index )
 	{
-		static src::wseverity_logger< severity_level > lgW;
+		static bool is_init = false;
+		if (is_init)
+			return;
+		is_init = true;
+		typedef sinks::synchronous_sink< basic_indexed_debug_output_backend<wchar_t>> debug_output_sync_sink_t;
+		boost::shared_ptr<basic_indexed_debug_output_backend<wchar_t>> backend_ptr = boost::make_shared<basic_indexed_debug_output_backend<wchar_t>>(index);
+		boost::shared_ptr<debug_output_sync_sink_t> debutg_output_sink(new debug_output_sync_sink_t(backend_ptr));
+		// 		std::locale loc2 = std::locale("");
+		//  		debutg_output_sink->imbue(loc2);
+		debutg_output_sink->set_formatter(expr::stream
+			<< "[" << expr::format_date_time(timestamp, L"%H:%M:%S") << "]"
+			//<< "[" << expr::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID") << "]"
+			<< " <" << severity.or_default(notice) << "> "
+			<< expr::message
+			);
+		
+		logging::core::get()->add_sink(debutg_output_sink);
+		//debutg_output_sink->set_filter(severity >= warning);
+		OutputDebugStr(L"InitBoostLog Init Success!");
+	}
+
+	void SetGlobalFilter(const severity_level min_level)
+	{
+		logging::core::get()->set_filter(severity >= min_level);
+	}
+
+	void ResetFilter()
+	{
+		logging::core::get()->reset_filter();
+	}
+
+	src::wseverity_logger_mt< severity_level > & GetLogSrcW()
+	{
+		static src::wseverity_logger_mt< severity_level > lgW;
 		return lgW;
 	}
 	
@@ -107,12 +220,10 @@ namespace boost_log
 
 	void LogW(severity_level level, const wchar_t * wszBuff)
 	{
-		OutputDebugStr(wszBuff);
 		BOOST_LOG_SEV(GetLogSrcW(), level) << wszBuff;
 	}
 	void LogA(severity_level mode, const char * szBuff)
 	{
-		OutputDebugStrA(szBuff);
 		wstring temp = string_tool::CharToWide(szBuff);
 		LogW(mode, temp.c_str());
 	}

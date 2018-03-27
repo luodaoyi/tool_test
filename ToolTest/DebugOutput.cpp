@@ -58,3 +58,13 @@ VOID OutputDebugStrA(const char * buffer, ...)
 	DebugStrA(buffer, pArgList);
 	va_end(pArgList);
 }
+VOID DebugShowMsg(const WCHAR * buffer, ...)
+{
+#ifdef _DEBUG
+	if (!g_debug_show) return;
+	va_list pArgList;
+	va_start(pArgList, buffer);
+	DebugStr(buffer, pArgList);
+	va_end(pArgList);
+#endif
+}

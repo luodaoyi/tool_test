@@ -19,7 +19,7 @@ CLanguage::CLanguage()
 	file_tools::ReadUnicodeFile(L"C:\\国服资源名字.txt", wsKoreaText);
 	InsertValueKeyMap(Map_Language_Other, wsKoreaText);
 
-	LOGW(notification) << L"读取资源所花时间:" << ::GetTickCount64() - ulTick;
+	LOGW(notice) << L"读取资源所花时间:" << ::GetTickCount64() - ulTick;
 }
 
 VOID CLanguage::InsertKeyValueMap(_In_ std::map<std::wstring, std::vector<stringView>>& Mp, _In_ CONST std::wstring& wsText)

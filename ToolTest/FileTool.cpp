@@ -275,8 +275,8 @@ namespace file_tools
 		GetFileSizeEx(file_handle, &file_size);
 		content.resize(file_size.LowPart);
 		DWORD read_types = 0;
-		::ReadFile(file_handle, content.data(), file_size.LowPart, &read_types, NULL);
-		return TRUE;
+		BOOL bret_ret = ::ReadFile(file_handle, content.data(), file_size.LowPart, &read_types, NULL);
+		return (bret_ret && read_types == file_size.LowPart);
 	}
 	
 
