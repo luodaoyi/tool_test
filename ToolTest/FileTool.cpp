@@ -21,6 +21,7 @@
 #include <tchar.h>
 
 
+
 namespace file_tools
 {
 	std::vector<string> ReadAsciiFileLines(const std::wstring & file_name)
