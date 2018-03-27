@@ -22,6 +22,7 @@ namespace file_tools
 	BOOL CreateUnicodeTextFile(_In_ CONST std::wstring& cwsPath);
 	BOOL ReadAsciiFileLen(_In_ CONST std::wstring& cwsPath, _Out_ ULONG& ulFileLen);
 	std::wstring CalcFileMd5(LPCTSTR szFileName);
+	BOOL GetFileNameList(std::vector<std::wstring> & retFileNameList, const std::wstring & strFolder, const std::wstring & suffix);
 }
 
 

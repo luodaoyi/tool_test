@@ -414,6 +414,42 @@ namespace file_tools
 		return ret_md5;
 	}
 
+	BOOL GetFileNameList(std::vector<std::wstring> & retFileNameList, const std::wstring & strFolder, const std::wstring & suffix)
+	{
+		WIN32_FIND_DATAW ffd;
+		HANDLE hFind = INVALID_HANDLE_VALUE;
+		WCHAR szFindDir[MAX_PATH] = {0};
+		wcscpy_s(szFindDir,strFolder.c_str());
+		wcscat_s(szFindDir,suffix.c_str());
+		hFind = FindFirstFile(szFindDir,&ffd);
+
+		if(INVALID_HANDLE_VALUE == hFind)
+		{
+			//::MessageBoxA(NULL,"hFind is INVALID_HANDLE_VALUE",NULL,MB_OK);
+			return FALSE;;
+		}
+
+		BOOL bRet = FALSE;
+		do
+		{
+			if(wcscmp(ffd.cFileName,L".") == 0 || wcscmp(ffd.cFileName,L"..") == 0)
+				continue;
+			if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				GetFileNameList(retFileNameList,strFolder + ffd.cFileName + L"\\",suffix);
+			}
+			else
+			{
+				std::wstring strFileName = ffd.cFileName;
+				std::wstring strSuffix = strFileName.substr(strFileName.length() - 4);
+				if(strSuffix != L".log")
+					retFileNameList.push_back((strFolder + ffd.cFileName));
+			}
+		}while(FindNextFile(hFind,&ffd) != 0);
+		FindClose(hFind);
+		return TRUE;
+	}
+
 }
 
 
