@@ -172,7 +172,7 @@ namespace boost_log
 	}
 
 
-	void InitDebugShow(unsigned index )
+	void InitDebugShow(unsigned index ) 
 	{
 		static bool is_init = false;
 		if (is_init)
