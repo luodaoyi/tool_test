@@ -47,7 +47,7 @@ namespace boost_log
 		//! Base type
 		typedef basic_formatted_sink_backend< CharT, sinks::concurrent_feeding > base_type;
 	private:
-		std::wstring m_pipe_name;
+		const std::wstring m_pipe_name;
 		HANDLE m_pipe = INVALID_HANDLE_VALUE;
 		bool m_is_connected = false;
 		bool Connnect()
@@ -73,16 +73,17 @@ namespace boost_log
 		/*!
 		* Constructor. Initializes the sink backend.
 		*/
-		BOOST_LOG_API basic_indexed_debug_output_backend(unsigned index)
+		BOOST_LOG_API basic_indexed_debug_output_backend(unsigned index) : m_pipe_name(L"\\\\.\\pipe\\zds_debug_" + std::to_wstring(index))
 		{
-			m_pipe_name = L"\\\\.\\pipe\\zds_debug_" + std::to_wstring(index);
-			Connnect();
+			OutputDebugStr(L"basic_indexed_debug_output_backend ¹¹Ôì:%s", m_pipe_name.c_str());
+			//Connnect();
 		}
 		/*!
 		* Destructor
 		*/
 		BOOST_LOG_API ~basic_indexed_debug_output_backend()
 		{
+			OutputDebugStr(L"basic_indexed_debug_output_backend Îö¹¹");
 			if (m_pipe && m_pipe != INVALID_HANDLE_VALUE)
 				::CloseHandle(m_pipe);
 		}
@@ -121,10 +122,10 @@ namespace boost_log
 	{
 		static const char* const str[] =
 		{
-			"notice",
-			"warning",
-			"error",
-			"critical"
+			"N",
+			"W",
+			"E",
+			"C"
 		};
 		if (static_cast<std::size_t>(lvl) < (sizeof(str) / sizeof(*str)))
 			strm << str[lvl];
@@ -186,13 +187,13 @@ namespace boost_log
 		debutg_output_sink->set_formatter(expr::stream
 			<< "[" << expr::format_date_time(timestamp, L"%H:%M:%S") << "]"
 			//<< "[" << expr::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID") << "]"
-			<< " <" << severity.or_default(notice) << "> "
+			<< "[" << severity.or_default(notice) << "]"
 			<< expr::message
 			);
 		
 		logging::core::get()->add_sink(debutg_output_sink);
 		//debutg_output_sink->set_filter(severity >= warning);
-		OutputDebugStr(L"InitBoostLog Init Success!");
+		OutputDebugStr(L"InitBoostLog InitInitDebugShow Success!");
 	}
 
 	void SetGlobalFilter(const severity_level min_level)
@@ -205,12 +206,7 @@ namespace boost_log
 		logging::core::get()->reset_filter();
 	}
 
-	src::wseverity_logger_mt< severity_level > & GetLogSrcW()
-	{
-		static src::wseverity_logger_mt< severity_level > lgW;
-		return lgW;
-	}
-	
+
 
 	void Flush()
 	{
@@ -220,7 +216,7 @@ namespace boost_log
 
 	void LogW(severity_level level, const wchar_t * wszBuff)
 	{
-		BOOST_LOG_SEV(GetLogSrcW(), level) << wszBuff;
+		BOOST_LOG_SEV(my_logger::get(), level) << wszBuff;
 	}
 	void LogA(severity_level mode, const char * szBuff)
 	{

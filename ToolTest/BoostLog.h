@@ -17,7 +17,7 @@ namespace boost_log
 	void InitDebugShow(unsigned index = 0);
 	void SetGlobalFilter(const severity_level min_level);
 	void ResetFilter();
-	boost::log::sources::wseverity_logger_mt< severity_level > & GetLogSrcW();
+
 
 	void LogW(severity_level mode, const wchar_t * wszBuff);
 	void LogA(severity_level mode, const char * szBuff);
@@ -30,7 +30,10 @@ namespace boost_log
 }
 
 
-#define LOGW(n) BOOST_LOG_SEV(boost_log::GetLogSrcW(), boost_log::n)
+BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(my_logger, boost::log::sources::wseverity_logger_mt< boost_log::severity_level >)
+
+
+#define LOGW(n) BOOST_LOG_SEV(my_logger::get(), boost_log::n)
 #define LOGW_FMT(LEVEL,BUFFER,...) boost_log::LogFmtW(boost_log::LEVEL,BUFFER,## __VA_ARGS__)
 #define LOGW_ERROR(BUFF) boost_log::LogW(boost_log::error,BUFF)
 #define LOGW_NOTICE(BUFF) boost_log::LogW(boost_log::notice,BUFF)
