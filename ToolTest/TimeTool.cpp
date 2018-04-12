@@ -15,19 +15,34 @@
 
 namespace time_tool
 {
-	std::time_t GetTimeFromString(const std::wstring & s)
+	bool GetTimeFromString(const std::wstring & s ,time_t & ret_time)
 	{
 
 		struct std::tm tm = { 0 };
 		if (6 != swscanf_s(s.c_str(), L"%d-%d-%d %d:%d:%d",
 			&tm.tm_year, &tm.tm_mon, &tm.tm_mday,
 			&tm.tm_hour, &tm.tm_min, &tm.tm_sec))
-			throw std::runtime_error("error GetTimeFromString");
+			return false;
 		tm.tm_year -= 1900;
 		tm.tm_mon -= 1;
-		auto ret = mktime(&tm);
-		if (-1 == ret)
-			throw std::bad_cast((std::string("GetTimeFromString ") + string_tool::WideToChar(s.c_str())).c_str());
+		ret_time = mktime(&tm);
+		if (-1 == ret_time)
+			return false;
+		else
+			return true;
+	}
+
+	SYSTEMTIME GetTimeStruct(time_t time)
+	{
+		tm tm = { 0 };
+		localtime_s(&tm, &time);
+		SYSTEMTIME ret;
+		ret.wYear = tm.tm_year + 1900;
+		ret.wMonth = tm.tm_mon + 1;
+		ret.wDay = tm.tm_mday;
+		ret.wHour = tm.tm_hour;
+		ret.wMinute = tm.tm_min;
+		ret.wSecond = tm.tm_sec;
 		return ret;
 	}
 
