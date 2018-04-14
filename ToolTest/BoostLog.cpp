@@ -58,9 +58,25 @@ namespace boost_log
 
 			m_pipe = CreateFile(m_pipe_name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 			if (m_pipe != INVALID_HANDLE_VALUE)
-				m_is_connected = true;
+			{
+				DWORD dwMode = PIPE_READMODE_MESSAGE;
+				if (!SetNamedPipeHandleState(m_pipe, &dwMode, NULL, NULL))
+				{
+					OutputDebugStr(L"SetNamedPipeHandleState failed!");
+					::CloseHandle(m_pipe);
+					m_pipe = INVALID_HANDLE_VALUE;
+					m_is_connected = false;
+				}
+				else
+					m_is_connected = true;
+			}
 			else
+			{
+				if (::GetLastError() == ERROR_PIPE_BUSY)
+					OutputDebugStr(L"ERROR_PIPE_BUSY  busy!");
 				m_is_connected = false;
+			}
+				
 			return m_pipe != INVALID_HANDLE_VALUE;
 		}
 	public:
