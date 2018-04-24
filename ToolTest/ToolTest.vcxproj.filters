@@ -108,6 +108,9 @@
     <ClInclude Include="Verification.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="KeySimulation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -178,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="ScreeShot.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="KeySimulation.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

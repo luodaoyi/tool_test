@@ -159,6 +159,7 @@
     <ClInclude Include="FileTool.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="InlineHook.h" />
+    <ClInclude Include="KeySimulation.h" />
     <ClInclude Include="Language.h" />
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="PipeClient.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="FileTool.cpp" />
     <ClCompile Include="IniFile.cpp" />
     <ClCompile Include="InlineHook.cpp" />
+    <ClCompile Include="KeySimulation.cpp" />
     <ClCompile Include="Language.cpp" />
     <ClCompile Include="PipeClient.cpp" />
     <ClCompile Include="PipeServer.cpp" />

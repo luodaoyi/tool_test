@@ -20,7 +20,7 @@ public:
 		if (m_data_ptr)
 		{
 			OutputDebugStr(L"free share struct");
-			m_data_ptr->~TShareType();
+			//m_data_ptr->~TShareType();
 			UnmapViewOfFile(m_data_ptr);
 			m_data_ptr = NULL;
 			m_is_opening = FALSE;
@@ -30,6 +30,7 @@ public:
 			::CloseHandle(m_map_file_handle);
 			m_map_file_handle = INVALID_HANDLE_VALUE;
 		}
+		m_share_type = NONE;
 	}
 	~CShareStruct()
 	{
@@ -133,7 +134,7 @@ private:
 				if (m_share_type == CREATOR)
 				{
 					ZeroMemory(m_data_ptr, sizeof(TShareType));
-					new (m_data_ptr)TShareType();//调用构造函数
+					//new (m_data_ptr)TShareType();//调用构造函数
 				}
 					
 				m_is_opening = TRUE;
