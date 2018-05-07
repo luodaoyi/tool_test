@@ -268,7 +268,7 @@ namespace file_tools
 	{
 
 		HANDLE file_handle = ::CreateFile(file_name.c_str(),
-			GENERIC_READ, FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (file_handle == INVALID_HANDLE_VALUE)
 			return FALSE;
 		SetResDeleter(file_handle, [](HANDLE & p){::CloseHandle(p); });

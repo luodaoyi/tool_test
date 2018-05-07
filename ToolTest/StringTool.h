@@ -60,7 +60,7 @@ namespace string_tool
 	bool IsUTF8String(const char* str, int length);
 	std::wstring GetBufferMd5(const char * buffer, size_t len);
 
-	wchar_t *  wstrcpy_my(wchar_t * strDest, const wchar_t * strSrc, size_t len);
+	wchar_t *  wstrcpy_my(wchar_t * strDest, const wchar_t * strSrc, size_t len = sizeof(wchar_t) * 1024);
 
 	template<typename T = std::wstring>
 	void ReplaceStr(T &szContent, const T &szSrc, const T &szDst)

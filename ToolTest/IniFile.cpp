@@ -9,7 +9,7 @@
 #include "DebugOutput.h"
 
 
-CIniFile::CIniFile()
+CIniFile::CIniFile() : m_rewrite_value(true)
 {
 
 }
@@ -43,7 +43,7 @@ void CIniFile::SetFileName(const std::wstring & file_name)
 	}
 }
 
-CIniFile::CIniFile(const std::wstring & file_name)
+CIniFile::CIniFile(const std::wstring & file_name, bool br) :m_rewrite_value(br)
 {
 	SetFileName(file_name);
 }
@@ -59,7 +59,8 @@ std::wstring CIniFile::GetIniStr(const std::wstring & key, const std::wstring & 
 		return L"";
 	WCHAR value[MAX_PATH] = { 0 };
 	::GetPrivateProfileString(section.c_str(), key.c_str(), default_value.c_str(), value, MAX_PATH, m_file_path_name.c_str());
-	WriteIniStr(key, value, section);
+	if (m_rewrite_value)
+		WriteIniStr(key, value, section);
 	return value;
 }
 void CIniFile::WriteIniStr(const std::wstring & key, const std::wstring & value, const std::wstring & section)
@@ -74,7 +75,8 @@ int CIniFile::GetIniInt(const std::wstring & key, const std::wstring & section,i
 	if (m_file_path_name.empty())
 		return 0;
 	int ret = ::GetPrivateProfileInt(section.c_str(), key.c_str(), default_value, m_file_path_name.c_str());
-	WriteIniInt(key, ret, section);
+	if (m_rewrite_value)
+		WriteIniInt(key, ret, section);
 	return ret;
 }
 void CIniFile::WriteIniInt(const std::wstring & key, const int value, const std::wstring & section)

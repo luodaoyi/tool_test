@@ -109,7 +109,7 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="KeySimulation.h">
-      <Filter>头文件</Filter>
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -183,7 +183,7 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="KeySimulation.cpp">
-      <Filter>源文件</Filter>
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

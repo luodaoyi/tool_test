@@ -5,7 +5,9 @@
 class CIniFile
 {
 public:
-	CIniFile(const std::wstring & file_name);
+	CIniFile(const std::wstring & file_name,
+		bool rewrite_value = true//这个为true就是要将默认的值写到配置里面去，false则不写
+		);
 	CIniFile();
 	~CIniFile();
 
@@ -18,5 +20,6 @@ public:
 	void WriteIniInt(const std::wstring & key, const int value, const std::wstring & section);
 private:
 	std::wstring m_file_path_name;
+	const bool m_rewrite_value;
 };
 
