@@ -7,7 +7,8 @@
 #include "commom_include.h"
 
 #include "StringTool.h"
-
+#include <mutex>
+#include <iostream>
 //#define DEBUG_STR_HEADER L"[ZDSDEBUG]"
 //#define DEBUG_STR_HEADERA "[ZDSDEBUG]"
 
@@ -67,4 +68,12 @@ VOID DebugShowMsg(const WCHAR * buffer, ...)
 	DebugStr(buffer, pArgList);
 	va_end(pArgList);
 #endif
+}
+
+VOID StdCout(const WCHAR * buffer)
+{
+	static std::mutex m;
+
+	std::lock_guard<std::mutex> l(m);
+	std::wcout << buffer << std::endl;
 }

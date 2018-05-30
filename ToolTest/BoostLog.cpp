@@ -24,8 +24,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <boost/log/sinks//debug_output_backend.hpp>
-
-
+#include <boost/core/null_deleter.hpp>
 #include "StringTool.h"
 #include "DebugOutput.h"
 
@@ -207,6 +206,31 @@ namespace boost_log
 			<< expr::message
 			);
 		
+		logging::core::get()->add_sink(debutg_output_sink);
+		//debutg_output_sink->set_filter(severity >= warning);
+		OutputDebugStr(L"InitBoostLog InitInitDebugShow Success!");
+	}
+
+
+	void InitStdout()
+	{
+		static bool is_init = false;
+		if (is_init)
+			return;
+		is_init = true;
+		typedef sinks::synchronous_sink< sinks::wtext_ostream_backend > stdout_sync_sink_t;
+		boost::shared_ptr<sinks::wtext_ostream_backend> backend_ptr = boost::make_shared<sinks::wtext_ostream_backend>();
+		backend_ptr->add_stream(boost::shared_ptr< std::wostream >(&std::wcout, boost::null_deleter()));
+		boost::shared_ptr<stdout_sync_sink_t> debutg_output_sink(new stdout_sync_sink_t(backend_ptr));
+		// 		std::locale loc2 = std::locale("");
+		//  		debutg_output_sink->imbue(loc2);
+		debutg_output_sink->set_formatter(expr::stream
+			<< "[" << expr::format_date_time(timestamp, L"%H:%M:%S") << "]"
+			//<< "[" << expr::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID") << "]"
+			<< "[" << severity.or_default(notice) << "]"
+			<< expr::message
+			);
+
 		logging::core::get()->add_sink(debutg_output_sink);
 		//debutg_output_sink->set_filter(severity >= warning);
 		OutputDebugStr(L"InitBoostLog InitInitDebugShow Success!");

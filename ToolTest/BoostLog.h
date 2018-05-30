@@ -15,6 +15,7 @@ namespace boost_log
 
 	void InitBoostLog(const wchar_t * szFileName, bool auto_flush = false);
 	void InitDebugShow(unsigned index = 0);
+	void InitStdout();
 	void SetGlobalFilter(const severity_level min_level);
 	void ResetFilter();
 

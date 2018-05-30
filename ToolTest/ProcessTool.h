@@ -35,4 +35,5 @@ namespace process_tool
 
 
 	BOOL GetProcessExePath(DWORD dwPid, std::wstring & full_path);
+	void SetThreadName(DWORD dwThreadID, const char* threadName);
 }
