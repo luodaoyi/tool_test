@@ -128,11 +128,24 @@ void CInlineHook::WriteHook()
 
 DWORD CInlineHook::GetMyNakedFunctNopPos()
 {
+	//这里要注意一点。这个0x90不一定是我们要找的地方例如下面
+	//所以要比较多个0x90
+	/*
+	CE401380      60            PUSHAD
+	CE401381      8BEC          MOV EBP,ESP
+	CE401383      83C5 20       ADD EBP,20
+	CE401386      8B46 10       MOV EAX,DWORD PTR DS:[ESI+10]
+	CE401389      50            PUSH EAX
+	CE40138A      53            PUSH EBX
+	CE40138B      E8 6890E2FF   CALL Smart_Bn.CE22A3F8   //!!!!注意这里也有一个90
+	CE401390      61            POPAD
+	*/
 	BYTE * pCode = NULL;
 	int i = 0;
+	const unsigned char buff[] = { 0x90,0x90,0x90,0x90,0x90 };
 	for (i = 0, pCode = (BYTE*)m_RealMyFuncAddr; i < 100; i++,pCode++)
 	{
-		if (*pCode == 0x90)
+		if(memcmp(pCode, buff,sizeof(buff)) == 0)
 			return (DWORD)pCode;
 	}
 	return 0;
