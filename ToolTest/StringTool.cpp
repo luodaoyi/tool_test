@@ -8,6 +8,8 @@
 #include <wincrypt.h>
 #include "DebugOutput.h"
 #include <memory>
+#include <algorithm>
+#include <cctype>
 namespace string_tool
 {
 
@@ -188,7 +190,7 @@ namespace string_tool
 
 
 		int nCurPos = 0;
-		int nRemain = len;
+		int nRemain = static_cast<int>( len);
 		DWORD cbRead = 0;
 		BYTE rgbFile[BUFMD5SIZE];
 		while (nRemain > 0)
@@ -290,6 +292,17 @@ namespace string_tool
 		return true;
 	}
 
+	std::string strlower(const std::string &str)
+	{
+		std::string newstr(str);
+		std::transform(newstr.begin(), newstr.end(), newstr.begin(), tolower);
+		return newstr;
+	}
 
-
+	std::wstring strlower(const std::wstring &str)
+	{
+		std::wstring newstr(str);
+		std::transform(newstr.begin(), newstr.end(), newstr.begin(), towlower);
+		return newstr;
+	}
 }

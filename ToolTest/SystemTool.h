@@ -17,20 +17,50 @@ namespace system_tool
 	BOOL DoActionTimeOut(DWORD dwMilliseconds, std::function<ACTION_RET(void)> fn);
 
 
-	class GuardCriticalSection
+	class CriticalSection
 	{
 	public:
-		GuardCriticalSection(CRITICAL_SECTION & cs) : m_cs(cs)
+		CriticalSection()
+		{
+			::InitializeCriticalSection(&m_cs);
+		}
+		~CriticalSection()
+		{
+			::DeleteCriticalSection(&m_cs);
+		}
+		void Lock()
 		{
 			::EnterCriticalSection(&m_cs);
 		}
+		void UnLock()
+		{
+			::LeaveCriticalSection(&m_cs);
+		}
+		bool TryLock()
+		{
+			return ::TryEnterCriticalSection(&m_cs) == TRUE;
+		}
+	private:
+		::CRITICAL_SECTION m_cs;
+	};
+
+	class GuardCriticalSection
+	{
+	public:
+		GuardCriticalSection(CriticalSection & cs) : m_cs(cs)
+		{
+			m_cs.Lock();
+		}
 		~GuardCriticalSection()
 		{
-			LeaveCriticalSection(&m_cs);
+			m_cs.UnLock();
 		}
 	private:
 		GuardCriticalSection(const GuardCriticalSection  &) = delete;
 		GuardCriticalSection & operator=(const GuardCriticalSection &) = delete;
-		CRITICAL_SECTION& m_cs;
+		CriticalSection& m_cs;
 	};
 }
+#define CONCAT2(a, b) a##b
+#define CONCAT(a, b) CONCAT2(a, b)
+#define SCOPED_LOCK(cs) system_tool::GuardCriticalSection CONCAT(scopedlock, __LINE__)(cs);

@@ -61,12 +61,10 @@ namespace string_tool
 	std::wstring GetBufferMd5(const char * buffer, size_t len);
 
 	wchar_t *  wstrcpy_my(wchar_t * strDest, const wchar_t * strSrc, size_t len = sizeof(wchar_t) * 1024);
-
-	template<typename T = std::wstring>
-	void ReplaceStr(T &szContent, const T &szSrc, const T &szDst)
+	template<typename T>
+	void ReplaceStr(T &szContent,const T &szSrc,const T &szDst)
 	{
-		T::size_type	pos = 0;
-
+		T::size_type pos = 0;
 		while ((pos = szContent.find(szSrc, pos)) != T::npos) {
 			szContent.replace(pos, szSrc.size(), szDst);
 			pos++;
@@ -74,5 +72,9 @@ namespace string_tool
 	}
 
 	bool ComparStringArray(const std::vector<std::wstring> & s1, const std::vector<std::wstring > & s2);
+
+
+	std::string strlower(const std::string &str);
+	std::wstring strlower(const std::wstring &str);
 }
 

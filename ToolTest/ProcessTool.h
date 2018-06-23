@@ -24,13 +24,8 @@ namespace process_tool
 	DWORD GetProcessCount(const std::wstring & exe_name);
 	std::vector<PROCESSENTRY32> GetPidsByCondition(std::function<bool(const PROCESSENTRY32 & process_info)> fnCheck);
 	DWORD StartProcessAndGetExitCode(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path = NULL);
-
-	namespace mem_inject
-	{
-		DWORD MemLoadLibraryA(const char *FilePath, HANDLE hTargetHandle);
-	}
-
-
+	BOOL InjectDllNormal(HANDLE hProcess, const std::wstring & lib_name);
+	uintptr_t FindRemoteDLL(DWORD pid, std::wstring libName);
 	BOOL MemInjectDll(HANDLE hProcess, const std::wstring & dll_path);
 
 

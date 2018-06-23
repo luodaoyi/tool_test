@@ -44,7 +44,7 @@ namespace boost_log
 		public sinks::basic_formatted_sink_backend< CharT, sinks::concurrent_feeding >
 	{
 		//! Base type
-		typedef basic_formatted_sink_backend< CharT, sinks::concurrent_feeding > base_type;
+		typedef sinks::basic_formatted_sink_backend< CharT, sinks::concurrent_feeding > base_type;
 	private:
 		const std::wstring m_pipe_name;
 		HANDLE m_pipe = INVALID_HANDLE_VALUE;
@@ -88,7 +88,7 @@ namespace boost_log
 		/*!
 		* Constructor. Initializes the sink backend.
 		*/
-		BOOST_LOG_API basic_indexed_debug_output_backend(unsigned index) : m_pipe_name(L"\\\\.\\pipe\\zds_debug_" + std::to_wstring(index))
+		basic_indexed_debug_output_backend(unsigned index) : m_pipe_name(L"\\\\.\\pipe\\zds_debug_" + std::to_wstring(index))
 		{
 			OutputDebugStr(L"basic_indexed_debug_output_backend ¹¹Ôì:%s", m_pipe_name.c_str());
 			//Connnect();
@@ -96,7 +96,7 @@ namespace boost_log
 		/*!
 		* Destructor
 		*/
-		BOOST_LOG_API ~basic_indexed_debug_output_backend()
+		~basic_indexed_debug_output_backend()
 		{
 			OutputDebugStr(L"basic_indexed_debug_output_backend Îö¹¹");
 			if (m_pipe && m_pipe != INVALID_HANDLE_VALUE)
@@ -123,7 +123,7 @@ namespace boost_log
 				return;
 
 			DWORD temp = 0;
-			if (!WriteFile(m_pipe, formatted_message.c_str(), formatted_message.size() * sizeof(char_type), &temp, NULL))
+			if (!WriteFile(m_pipe, formatted_message.c_str(), static_cast<DWORD>( formatted_message.size() * sizeof(char_type)), &temp, NULL))
 				m_is_connected = false;
 		}
 	};

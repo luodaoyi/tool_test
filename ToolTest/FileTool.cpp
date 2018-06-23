@@ -300,7 +300,7 @@ namespace file_tools
 			return FALSE;
 		SetResDeleter(file_handle, [](HANDLE & h){::CloseHandle(h); });
 		DWORD write_size = 0;
-		return ::WriteFile(file_handle, buffer, size, &write_size, NULL);
+		return ::WriteFile(file_handle, buffer, static_cast<DWORD>( size), &write_size, NULL);
 	}
 
 	BOOL  ReadAsciiFileLen(_In_ CONST std::wstring& cwsPath, _Out_ ULONG& ulFileLen)

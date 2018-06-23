@@ -7,6 +7,7 @@
 #include <Shlwapi.h>
 #include <psapi.h> 
 #include "ResManager.h"
+#include <algorithm>
 namespace process_tool
 {
 	BOOL IsProcessRunning(DWORD dwPid)
@@ -832,897 +833,149 @@ namespace process_tool
 			return FALSE;
 	}
 
-
-
-
-
-
-
-	namespace mem_inject
+	BOOL InjectDllNormal(HANDLE hProcess, const std::wstring & lib_name)
 	{
-		typedef struct ParamData    //参数结构 
+		wchar_t dllPath[MAX_PATH + 1] = { 0 };
+		wcscpy_s(dllPath, lib_name.c_str());
+
+		static HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
+
+		if (kernel32 == NULL)
 		{
-			DWORD Param1;
-			DWORD Param2;
-			DWORD Param3;
-			DWORD Param4;
-			DWORD dwCallAddr;
-		}ParamData, *Paramp;
-
-
-		void CurrentProcess_RemoteCall(LPVOID lParam)
-		{
-			ParamData * lp;
-			lp = (ParamData *)lParam;
-			DWORD lp1 = (DWORD)lp->Param1;
-			DWORD lp2 = (DWORD)lp->Param2;
-			DWORD lp3 = (DWORD)lp->Param3;
-			DWORD dwAddr = lp->dwCallAddr;
-			_asm
-			{
-				pushad
-					push lp3
-					push lp2
-					push lp1
-					call dwAddr
-					popad
-			}
-		}
-
-
-		typedef struct ParamData2    //参数结构 
-		{
-			DWORD GetContextAddr;
-			HANDLE hThread;
-			CONTEXT ctx;
-			DWORD nEax;
-			DWORD nEbx;
-		}ParamData2, *PParamData2;
-
-
-		void CurrentProcess_InfusionFunc(HANDLE hProcess, LPVOID mFunc, LPVOID Param, DWORD ParamSize)
-		{
-			DWORD mFuncAddr;//申请函数内存地址         
-			LPVOID ParamAddr;//申请参数内存地址 
-			HANDLE hThread;    //线程句柄 
-			DWORD NumberOfByte; //辅助返回值 
-			DWORD local_oldprotect;
-
-			//申请内存 
-			////MessageBoxA(NULL, "11111111111", "2222222222222", MB_OK);
-			BYTE bbackup[80] = { 0 };
-
-			HMODULE hMod = GetModuleHandleA("ntdll.dll"); //(HMODULE)GetProcessModuleBase("kernel32.dll",GetProcessId(hProcess));
-			mFuncAddr = (DWORD)GetProcAddress(hMod, "LdrLoadDll");//GetProcAddressEx(hProcess,hMod,"TerminateProcess");//(LPVOID)GetModuleHandleA("kernel32.dll");//VirtualAllocEx(hProcess,NULL,128,MEM_COMMIT|MEM_RESERVE,PAGE_EXECUTE_READWRITE); 
-			if (mFuncAddr == 0)
-			{
-				//MessageBoxA(NULL, "11111111111", "2222222222222", MB_OK);
-			}
-			mFuncAddr = mFuncAddr - 5;
-			DWORD local_Proc = (DWORD)VirtualAllocEx(hProcess, NULL, 0X1000, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-
-			VirtualProtectEx((HANDLE)hProcess, (LPVOID)mFuncAddr, 5, PAGE_EXECUTE_READWRITE, &local_oldprotect);
-
-			//*(BYTE*)mFuncAddr = 0xE9;
-
-			//*(DWORD*)(mFuncAddr + 1) = (DWORD)local_Proc - mFuncAddr - 5;
-
-			char local_jmpbuffer[6] = { 0 };
-			*(BYTE*)((DWORD)local_jmpbuffer) = 0xE9;
-			*(DWORD*)((DWORD)local_jmpbuffer + 1) = (DWORD)local_Proc - mFuncAddr - 5;
-
-			BOOL bWrite = WriteProcessMemory(hProcess, (LPVOID)mFuncAddr, local_jmpbuffer, 5, &NumberOfByte);
-
-			VirtualProtectEx((HANDLE)hProcess, (LPVOID)mFuncAddr, 5, PAGE_EXECUTE_READWRITE, &local_oldprotect);
-
-			ParamAddr = VirtualAllocEx(hProcess, NULL, ParamSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-
-			int memsize = 80;
-
-			bWrite =WriteProcessMemory(hProcess, (LPVOID)local_Proc, mFunc, 0X1000, &NumberOfByte);
-			WriteProcessMemory(hProcess, ParamAddr, Param, ParamSize, &NumberOfByte);
-
-			hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)mFuncAddr, ParamAddr, 0, NULL);
-
-			if (!hThread)
-			{
-				int ierr = GetLastError();
-			}
-
-			WaitForSingleObject(hThread, INFINITE); //等待线程结束 
-			VirtualFreeEx(hProcess, ParamAddr, 0, MEM_RELEASE);
-
-			//释放远程句柄 
-			CloseHandle(hThread);
-		}
-
-
-		BOOL MySetPrivilege(LPCTSTR lpszPrivilege, BOOL bEnablePrivilege)
-		{
-			TOKEN_PRIVILEGES tp;
-			HANDLE hToken;
-			LUID luid;
-			if (!OpenProcessToken(GetCurrentProcess(),
-				TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-				&hToken))
-			{
-				//_tprintf("OpenProcessToken error: %u/n", GetLastError());
-				return FALSE;
-			}
-			if (!LookupPrivilegeValue(NULL,
-				lpszPrivilege,
-				&luid))
-			{
-				//_tprintf("LookupPrivilegeValue error: %u/n", GetLastError() ); 
-				return FALSE;
-			}
-			tp.PrivilegeCount = 1;
-			tp.Privileges[0].Luid = luid;
-			if (bEnablePrivilege)
-				tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-			else
-				tp.Privileges[0].Attributes = 0;
-			if (!AdjustTokenPrivileges(hToken,
-				FALSE,
-				&tp,
-				sizeof(TOKEN_PRIVILEGES),
-				(PTOKEN_PRIVILEGES)NULL,
-				(PDWORD)NULL))
-			{
-				//_tprintf("AdjustTokenPrivileges error: %u/n", GetLastError() ); 
-				return FALSE;
-			}
-			if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
-			{
-				//_tprintf("The token does not have the specified privilege. /n");
-				return FALSE;
-			}
-			return TRUE;
-		}
-
-
-		int CurrentProcess_GetAlignedSize(int nOrigin, int nAlignment)
-		{
-			return (nOrigin + nAlignment - 1) / nAlignment * nAlignment;
-		}
-
-		//计算整个dll映像文件的尺寸
-		int CurrentProcess_CalcTotalImageSize(DWORD filedatabase)
-		{
-			//VMProtectBegin("dsifeklc");
-			int nSize = 0;
-
-			PIMAGE_DOS_HEADER m_pDosHeader = (PIMAGE_DOS_HEADER)filedatabase;  // DOS头
-
-			PIMAGE_NT_HEADERS m_pNTHeader = (PIMAGE_NT_HEADERS)((PBYTE)filedatabase + *(DWORD*)((DWORD)m_pDosHeader + 0x3C));
-
-			PIMAGE_SECTION_HEADER m_pSectionHeader = (PIMAGE_SECTION_HEADER)((PBYTE)m_pNTHeader + sizeof(IMAGE_NT_HEADERS));
-
-			if (m_pNTHeader == NULL)
-			{
-				return 0;
-			}
-
-			int nAlign = m_pNTHeader->OptionalHeader.SectionAlignment; //段对齐字节数
-
-			// 计算所有头的尺寸。包括dos, coff, pe头 和 段表的大小
-			nSize = CurrentProcess_GetAlignedSize(m_pNTHeader->OptionalHeader.SizeOfHeaders, nAlign);
-			// 计算所有节的大小
-			for (int i = 0; i < m_pNTHeader->FileHeader.NumberOfSections; ++i)
-			{
-				//得到该节的大小
-				int nCodeSize = m_pSectionHeader[i].Misc.VirtualSize;
-				int nLoadSize = m_pSectionHeader[i].SizeOfRawData;
-				int nMaxSize = (nLoadSize > nCodeSize) ? (nLoadSize) : (nCodeSize);
-				int nSectionSize = CurrentProcess_GetAlignedSize(m_pSectionHeader[i].VirtualAddress + nMaxSize, nAlign);
-
-				if (nSize < nSectionSize)
-				{
-					nSize = nSectionSize;  //Use the Max;
-				}
-			}
-
-			//VMProtectEnd();
-			return nSize;
-		}
-
-
-		void CurrentProcess_CopyDllDatas(void* pDest, void* pSrc)
-		{
-
-			PIMAGE_DOS_HEADER m_pDosHeader = (PIMAGE_DOS_HEADER)pSrc;  // DOS头
-
-			PIMAGE_NT_HEADERS m_pNTHeader = (PIMAGE_NT_HEADERS)((PBYTE)pSrc + *(DWORD*)((DWORD)m_pDosHeader + 0x3C));
-
-			PIMAGE_SECTION_HEADER m_pSectionHeader = (PIMAGE_SECTION_HEADER)((PBYTE)m_pNTHeader + sizeof(IMAGE_NT_HEADERS));
-
-			int  nHeaderSize = m_pNTHeader->OptionalHeader.SizeOfHeaders;
-			int  nSectionSize = m_pNTHeader->FileHeader.NumberOfSections * sizeof(IMAGE_SECTION_HEADER);
-			int  nMoveSize = nHeaderSize + nSectionSize;
-			//复制头和段信息
-			memcpy(pDest, pSrc, nMoveSize);
-
-			//复制每个节
-			for (int i = 0; i < m_pNTHeader->FileHeader.NumberOfSections; ++i)
-			{
-				if (m_pSectionHeader[i].VirtualAddress == 0 || m_pSectionHeader[i].SizeOfRawData == 0)
-				{
-					continue;
-				}
-				// 定位该节在内存中的位置
-				void *pSectionAddress = (void *)((PBYTE)pDest + m_pSectionHeader[i].VirtualAddress);
-				// 复制段数据到虚拟内存
-				memcpy((void *)pSectionAddress, (void *)((PBYTE)pSrc + m_pSectionHeader[i].PointerToRawData),
-					m_pSectionHeader[i].SizeOfRawData);
-			}
-
-		}
-
-		void CurrentProcess_DoNewRelocation(void *pNewBase, void *pGameBase)
-		{
-			PIMAGE_DOS_HEADER m_pDosHeader = (PIMAGE_DOS_HEADER)pNewBase;
-			//新的pe头地址
-			PIMAGE_NT_HEADERS m_pNTHeader = (PIMAGE_NT_HEADERS)((PBYTE)pNewBase + (*(DWORD*)((DWORD)m_pDosHeader + 0x3C)));
-
-			PIMAGE_BASE_RELOCATION pLoc = (PIMAGE_BASE_RELOCATION)((unsigned long)pNewBase
-				+ m_pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
-
-			while ((pLoc->VirtualAddress + pLoc->SizeOfBlock) != 0) //开始扫描重定位表
-			{
-				WORD *pLocData = (WORD *)((PBYTE)pLoc + sizeof(IMAGE_BASE_RELOCATION));
-				//计算本节需要修正的重定位项（地址）的数目
-				int nNumberOfReloc = (pLoc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
-
-				for (int i = 0; i < nNumberOfReloc; i++)
-				{
-					// 每个WORD由两部分组成。高4位指出了重定位的类型，WINNT.H中的一系列IMAGE_REL_BASED_xxx定义了重定位类型的取值。
-					// 低12位是相对于VirtualAddress域的偏移，指出了必须进行重定位的位置。
-					if ((DWORD)(pLocData[i] & 0x0000F000) == 0x0000A000)
-					{
-						// 64位dll重定位，IMAGE_REL_BASED_DIR64
-						// 对于IA-64的可执行文件，重定位似乎总是IMAGE_REL_BASED_DIR64类型的。
-#ifdef _WIN64
-						ULONGLONG* pAddress = (ULONGLONG *)((PBYTE)pNewBase + pLoc->VirtualAddress + (pLocData[i] & 0x0FFF));
-						ULONGLONG ullDelta = (ULONGLONG)pNewBase - m_pNTHeader->OptionalHeader.ImageBase;
-						*pAddress += ullDelta;
-#endif
-					}
-					else if ((DWORD)(pLocData[i] & 0x0000F000) == 0x00003000) //这是一个需要修正的地址
-					{
-						// 32位dll重定位，IMAGE_REL_BASED_HIGHLOW
-						// 对于x86的可执行文件，所有的基址重定位都是IMAGE_REL_BASED_HIGHLOW类型的。
-#ifndef _WIN64
-						DWORD* pAddress = (DWORD *)((PBYTE)pNewBase + pLoc->VirtualAddress + (pLocData[i] & 0x0FFF));
-						DWORD dwDelta = (DWORD)pGameBase - m_pNTHeader->OptionalHeader.ImageBase;
-						*pAddress += dwDelta;
-						//OutputDebugStringA("[33333] 已有地址修正");
-#endif
-					}
-				}
-				//转移到下一个节进行处理
-				pLoc = (PIMAGE_BASE_RELOCATION)((PBYTE)pLoc + pLoc->SizeOfBlock);
-			}
-		}
-
-
-
-		//两个参数
-		BOOL __stdcall CurrentProcess_FillRavAddress(LPVOID param)
-		{
-			// 引入表实际上是一个 IMAGE_IMPORT_DESCRIPTOR 结构数组，全部是0表示结束
-			// 数组定义如下：
-			// 
-			// DWORD   OriginalFirstThunk;         // 0表示结束，否则指向未绑定的IAT结构数组
-			// DWORD   TimeDateStamp; 
-			// DWORD   ForwarderChain;             // -1 if no forwarders
-			// DWORD   Name;                       // 给出dll的名字
-			// DWORD   FirstThunk;                 // 指向IAT结构数组的地址(绑定后，这些IAT里面就是实际的函数地址)
-
-			void *pImageBase = (void*)param;
-
-			//新的dos头
-			PIMAGE_DOS_HEADER m_pDosHeader = (PIMAGE_DOS_HEADER)param;
-
-			DWORD NumOfBytes = 0;
-
-
-			//新的pe头地址
-			PIMAGE_NT_HEADERS m_pNTHeader = (PIMAGE_NT_HEADERS)((PBYTE)param + (*(DWORD*)((DWORD)m_pDosHeader + 0x3C)));
-
-			//PIMAGE_NT_HEADERS m_pNTHeader = (PIMAGE_NT_HEADERS)(*(DWORD*)((DWORD)param+4));
-
-			unsigned long nOffset = m_pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
-
-			if (nOffset == 0)
-			{
-				return TRUE; //No Import Table
-			}
-
-			PIMAGE_IMPORT_DESCRIPTOR pID = (PIMAGE_IMPORT_DESCRIPTOR)((PBYTE)pImageBase + nOffset);
-
-			while (pID->Characteristics != 0)
-			{
-				PIMAGE_THUNK_DATA pRealIAT = (PIMAGE_THUNK_DATA)((PBYTE)pImageBase + pID->FirstThunk);
-				PIMAGE_THUNK_DATA pOriginalIAT = (PIMAGE_THUNK_DATA)((PBYTE)pImageBase + pID->OriginalFirstThunk);
-
-				//获取dll的名字
-#define NAME_BUF_SIZE 256
-
-				char szBuf[NAME_BUF_SIZE] = ""; //dll name;
-				BYTE* pName = (BYTE*)((PBYTE)pImageBase + pID->Name);
-				int i = 0;
-
-				for (i = 0; i<NAME_BUF_SIZE; i++)
-				{
-					if (pName[i] == 0)
-					{
-						break;
-					}
-					szBuf[i] = pName[i];
-				}
-				if (i >= NAME_BUF_SIZE)
-				{
-					return FALSE;  // bad dll name
-				}
-				else
-				{
-					szBuf[i] = 0;
-				}
-
-				HMODULE hDll = (HMODULE)GetModuleHandleA(szBuf);
-
-				if (hDll == NULL)
-				{
-					//MessageBoxA(NULL,szBuf,"dll没有加载",MB_OK);
-					return FALSE; //NOT FOUND DLL
-				}
-
-
-
-				//获取DLL中每个导出函数的地址，填入IAT
-				//每个IAT结构是 ：
-				// union { PBYTE  ForwarderString;
-				//   PDWORD Function;
-				//   DWORD Ordinal;
-				//   PIMAGE_IMPORT_BY_NAME  AddressOfData;
-				// } u1;
-				// 长度是一个DWORD ，正好容纳一个地址。
-				for (i = 0;; i++)
-				{
-					if (pOriginalIAT[i].u1.Function == 0)
-					{
-
-						break;
-					}
-
-					FARPROC lpFunction = NULL;
-
-					if (pOriginalIAT[i].u1.Ordinal & IMAGE_ORDINAL_FLAG) //这里的值给出的是导出序号
-					{
-						lpFunction = (FARPROC)GetProcAddress(hDll, (LPCSTR)(pOriginalIAT[i].u1.Ordinal & 0x0000FFFF));
-						////MessageBoxA(NULL,(char*)lpFunction,"序号",MB_OK);
-					}
-					else //按照名字导入
-					{
-						//获取此IAT项所描述的函数名称
-						PIMAGE_IMPORT_BY_NAME pByName = (PIMAGE_IMPORT_BY_NAME)((DWORD)pImageBase + (DWORD)(pOriginalIAT[i].u1.AddressOfData));
-						lpFunction = (FARPROC)GetProcAddress(hDll, (char *)pByName->Name);
-
-					}
-					if (lpFunction != NULL)   //找到了！
-					{
-						pRealIAT[i].u1.Function = (DWORD)lpFunction;
-					}
-					else
-					{
-						return FALSE;
-					}
-				}
-
-				//move to next 
-				pID = (PIMAGE_IMPORT_DESCRIPTOR)((PBYTE)pID + sizeof(IMAGE_IMPORT_DESCRIPTOR));
-			}
-
-
-			return TRUE;
-		}
-
-
-
-#include <stdio.h>
-
-		DWORD MemLoadLibraryA(const char *FilePath, HANDLE hTargetHandle)
-		{
-
-			//	void *pMemoryAddress
-			//HANDLE hTargetHandle 
-			//char *pszDllData
-			////MessageBoxA(NULL, "1111111", "2222222222", MB_OK);
-			//读取dll文件
-			FILE *pFile = NULL;
-			fopen_s(&pFile,FilePath, "rb");
-			if (!pFile)return 0;
-			fseek(pFile, 0, SEEK_END);
-
-			int filesize = ftell(pFile);
-
-			fseek(pFile, 0, SEEK_SET);
-
-			if (filesize<1000 || filesize == 0xFFFFFFFF)
-			{
-				fclose(pFile);
-				return 0;
-			}
-
-			LPVOID pszDllData = VirtualAllocEx((HANDLE)0xFFFFFFFF, NULL, filesize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);//new char[filesize];
-
-			OVERLAPPED olp;
-
-			memset(&olp, 0, sizeof(OVERLAPPED));
-
-			olp.Offset = 0;
-
-			fread(pszDllData, 1, filesize, pFile);
-
-			fclose(pFile);
-
-
-			//进行加载
-			DWORD newsize = CurrentProcess_CalcTotalImageSize((DWORD)pszDllData);
-
-			void *pMemoryAddress = VirtualAllocEx((HANDLE)0xFFFFFFFF, NULL, newsize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-
-			CurrentProcess_CopyDllDatas(pMemoryAddress, pszDllData);
-
-
-			//新的dos头
-			PIMAGE_DOS_HEADER m_pDosHeader = (PIMAGE_DOS_HEADER)pMemoryAddress;
-
-			//新的pe头地址
-			PIMAGE_NT_HEADERS m_pNTHeader = (PIMAGE_NT_HEADERS)((PBYTE)pMemoryAddress + (*(DWORD*)((DWORD)m_pDosHeader + 0x3C)));
-			//新的节表地址
-			PIMAGE_SECTION_HEADER m_pSectionHeader = (PIMAGE_SECTION_HEADER)((PBYTE)m_pNTHeader + sizeof(IMAGE_NT_HEADERS));
-
-			//DWORD ofset = (DWORD)&*(BYTE*)((DWORD)m_pDosHeader+0x3C) - (DWORD)m_pDosHeader;
-
-
-			LPVOID lpGameMemory = VirtualAllocEx(hTargetHandle, NULL, newsize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-
-			if (!lpGameMemory)
-			{
-				DWORD dwLastError = ::GetLastError();
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pszDllData, 0, MEM_RELEASE);
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-
-				return 0;
-			}
-
-
-
-
-			if (m_pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress > 0
-				&& m_pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size > 0)
-			{
-				//DoRelocation(pMemoryAddress);
-				//DoGameRelocation(hTargetHandle,pMemoryAddress,lpGameMemory);
-				////MessageBoxA(NULL,"有重定位信息","info",MB_OK);
-				CurrentProcess_DoNewRelocation(pMemoryAddress, lpGameMemory);
-			}
-
-			//本地处理
-			CurrentProcess_FillRavAddress(pMemoryAddress);
-
-			BOOL bIn = WriteProcessMemory(hTargetHandle, lpGameMemory, pMemoryAddress, newsize, NULL);
-
-			if (!bIn)
-			{
-
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pszDllData, 0, MEM_RELEASE);
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-				return 0;
-			}
-
-			//OutLog("已修复输入表",(DWORD)lpGameMemory);
-
-			ParamData CallParam;
-			CallParam.dwCallAddr = (DWORD)(lpGameMemory)+m_pNTHeader->OptionalHeader.AddressOfEntryPoint;
-			CallParam.Param1 = (DWORD)(lpGameMemory);
-			CallParam.Param2 = 1;
-			CallParam.Param3 = 0;
-
-
-			//OutLog("入口",CallParam.dwCallAddr);
-
-			CurrentProcess_InfusionFunc(hTargetHandle, CurrentProcess_RemoteCall, &CallParam, sizeof(CallParam));
-
-			VirtualFreeEx((HANDLE)0xFFFFFFFF, pszDllData, 0, MEM_RELEASE);
-			VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-
-			//OutLog("注入成功",(DWORD)lpGameMemory);
-
-			return 0;
-
-		}
-
-
-		DWORD MemLoadLibraryA(HINSTANCE hInstance, DWORD dwResourceId, HANDLE hTargetHandle)
-		{
-
-			//	void *pMemoryAddress
-			//HANDLE hTargetHandle 
-			//char *pszDllData
-			////MessageBoxA(NULL, "1111111", "2222222222", MB_OK);
-			//读取dll文件
-
-			DWORD NumOfBytes = 0;
-			HRSRC hRsrc = FindResourceA(hInstance, MAKEINTRESOURCEA(dwResourceId), "SVCHOST_DATA");
-
-			DWORD filesize = SizeofResource(hInstance, hRsrc);
-
-			HGLOBAL hGlobal = LoadResource(hInstance, hRsrc);
-
-			LPVOID pBuffer = LockResource(hGlobal);
-
-			if (filesize<1000 || filesize == 0xFFFFFFFF)
-			{
-				return 0;
-			}
-
-			LPVOID pszDllData = VirtualAllocEx((HANDLE)0xFFFFFFFF, NULL, filesize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);//new char[filesize];
-
-			memcpy(pszDllData, pBuffer, filesize);
-			UnlockResource(hGlobal);
-
-
-			//进行加载
-			DWORD newsize = CurrentProcess_CalcTotalImageSize((DWORD)pszDllData);
-
-			void *pMemoryAddress = VirtualAllocEx((HANDLE)0xFFFFFFFF, NULL, newsize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-
-			CurrentProcess_CopyDllDatas(pMemoryAddress, pszDllData);
-
-
-			//新的dos头
-			PIMAGE_DOS_HEADER m_pDosHeader = (PIMAGE_DOS_HEADER)pMemoryAddress;
-
-			//新的pe头地址
-			PIMAGE_NT_HEADERS m_pNTHeader = (PIMAGE_NT_HEADERS)((PBYTE)pMemoryAddress + (*(DWORD*)((DWORD)m_pDosHeader + 0x3C)));
-			//新的节表地址
-			PIMAGE_SECTION_HEADER m_pSectionHeader = (PIMAGE_SECTION_HEADER)((PBYTE)m_pNTHeader + sizeof(IMAGE_NT_HEADERS));
-
-			//DWORD ofset = (DWORD)&*(BYTE*)((DWORD)m_pDosHeader+0x3C) - (DWORD)m_pDosHeader;
-
-			LPVOID lpGameMemory00 = VirtualAllocEx(hTargetHandle, NULL, newsize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-			if (!lpGameMemory00)
-			{
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pszDllData, 0, MEM_RELEASE);
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-				return 0;
-			}
-
-
-			WriteProcessMemory(hTargetHandle, lpGameMemory00, pMemoryAddress, newsize, NULL);
-
-
-			LPVOID lpGameMemory = VirtualAllocEx(hTargetHandle, NULL, newsize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-
-			if (!lpGameMemory)
-			{
-
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pszDllData, 0, MEM_RELEASE);
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-
-				return 0;
-			}
-
-
-
-
-			if (m_pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress > 0
-				&& m_pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size > 0)
-			{
-				//DoRelocation(pMemoryAddress);
-				//DoGameRelocation(hTargetHandle,pMemoryAddress,lpGameMemory);
-				////MessageBoxA(NULL,"有重定位信息","info",MB_OK);
-				CurrentProcess_DoNewRelocation(pMemoryAddress, lpGameMemory);
-			}
-
-			//本地处理
-			CurrentProcess_FillRavAddress(pMemoryAddress);
-
-			BOOL bIn = WriteProcessMemory(hTargetHandle, lpGameMemory, pMemoryAddress, newsize, NULL);
-
-			if (!bIn)
-			{
-
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pszDllData, 0, MEM_RELEASE);
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-				return 0;
-			}
-
-			//OutLog("已修复输入表",(DWORD)lpGameMemory);
-
-			ParamData CallParam;
-			CallParam.dwCallAddr = (DWORD)(lpGameMemory)+m_pNTHeader->OptionalHeader.AddressOfEntryPoint;
-			CallParam.Param1 = (DWORD)(lpGameMemory);
-			CallParam.Param2 = 1;
-			CallParam.Param3 = (DWORD)lpGameMemory00;
-
-
-			//OutLog("入口",CallParam.dwCallAddr);
-
-			CurrentProcess_InfusionFunc(hTargetHandle, CurrentProcess_RemoteCall, &CallParam, sizeof(CallParam));
-
-			VirtualFreeEx((HANDLE)0xFFFFFFFF, pszDllData, 0, MEM_RELEASE);
-			VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-
-			//OutLog("注入成功",(DWORD)lpGameMemory);
-
-			return 0;
-
-		}
-
-
-		DWORD MemLoadLibrary2A(DWORD DllMemory, HANDLE hTargetHandle)
-		{
-			DWORD NumOfBytes = 0;
-			LPVOID pszDllData = (LPVOID)DllMemory;
-
-
-			//进行加载
-			DWORD newsize = CurrentProcess_CalcTotalImageSize((DWORD)pszDllData);
-
-			void *pMemoryAddress = VirtualAllocEx((HANDLE)0xFFFFFFFF, NULL, newsize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-
-			CurrentProcess_CopyDllDatas(pMemoryAddress, pszDllData);
-
-
-			//新的dos头
-			PIMAGE_DOS_HEADER m_pDosHeader = (PIMAGE_DOS_HEADER)pMemoryAddress;
-
-			//新的pe头地址
-			PIMAGE_NT_HEADERS m_pNTHeader = (PIMAGE_NT_HEADERS)((PBYTE)pMemoryAddress + (*(DWORD*)((DWORD)m_pDosHeader + 0x3C)));
-			//新的节表地址
-			PIMAGE_SECTION_HEADER m_pSectionHeader = (PIMAGE_SECTION_HEADER)((PBYTE)m_pNTHeader + sizeof(IMAGE_NT_HEADERS));
-
-			//DWORD ofset = (DWORD)&*(BYTE*)((DWORD)m_pDosHeader+0x3C) - (DWORD)m_pDosHeader;
-
-			LPVOID lpGameMemory = VirtualAllocEx(hTargetHandle, NULL, newsize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-
-			if (!lpGameMemory)
-			{
-
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-
-				return 0;
-			}
-
-
-
-
-			if (m_pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress > 0
-				&& m_pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size > 0)
-			{
-				//DoRelocation(pMemoryAddress);
-				//DoGameRelocation(hTargetHandle,pMemoryAddress,lpGameMemory);
-				////MessageBoxA(NULL,"有重定位信息","info",MB_OK);
-				CurrentProcess_DoNewRelocation(pMemoryAddress, lpGameMemory);
-			}
-
-			//本地处理
-			CurrentProcess_FillRavAddress(pMemoryAddress);
-
-			BOOL bIn = WriteProcessMemory(hTargetHandle, lpGameMemory, pMemoryAddress, newsize, NULL);
-
-			if (!bIn)
-			{
-
-
-				VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-				return 0;
-			}
-
-			//OutLog("已修复输入表",(DWORD)lpGameMemory);
-
-			ParamData CallParam;
-			CallParam.dwCallAddr = (DWORD)(lpGameMemory)+m_pNTHeader->OptionalHeader.AddressOfEntryPoint;
-			CallParam.Param1 = (DWORD)(lpGameMemory);
-			CallParam.Param2 = 1;
-			CallParam.Param3 = (DWORD)0;
-
-
-			//OutLog("入口",CallParam.dwCallAddr);
-
-			CurrentProcess_InfusionFunc(hTargetHandle, CurrentProcess_RemoteCall, &CallParam, sizeof(CallParam));
-
-
-			VirtualFreeEx((HANDLE)0xFFFFFFFF, pMemoryAddress, 0, MEM_RELEASE);
-
-
-			return 0;
-		}
-	}
-
-	// Loadlibrary template
-	typedef HMODULE(__stdcall* pLoadLibraryA)(LPCSTR);
-	// getprocaddress template
-	typedef FARPROC(__stdcall* pGetProcAddress)(HMODULE, LPCSTR);
-
-	// dll entrypoint template
-	typedef INT(__stdcall* dllmain)(HMODULE, DWORD32, LPVOID);
-
-	// parameters for "libraryloader()" 
-	struct loaderdata {
-		LPVOID ImageBase; //base address of dll 
-		PIMAGE_NT_HEADERS NtHeaders;
-		PIMAGE_BASE_RELOCATION BaseReloc;
-		PIMAGE_IMPORT_DESCRIPTOR ImportDir;
-
-		pLoadLibraryA fnLoadLibraryA;
-		pGetProcAddress fnGetProcAddress;
-	};
-
-
-	// code responsible for loading the dll in remote process:
-	//(this will be copied to and executed in the target process)
-	DWORD __stdcall LibraryLoader(LPVOID Memory)
-	{
-		loaderdata* LoaderParams = (loaderdata*)Memory;
-
-		PIMAGE_BASE_RELOCATION ImageRelocation = LoaderParams->BaseReloc;
-
-		DWORD delta = (DWORD)((LPBYTE)LoaderParams->ImageBase - LoaderParams->NtHeaders->OptionalHeader.ImageBase); // Calculate the delta
-
-		while (ImageRelocation->VirtualAddress) {
-			if (ImageRelocation->SizeOfBlock >= sizeof(PIMAGE_BASE_RELOCATION))
-			{
-				int count = (ImageRelocation->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
-				PWORD list = (PWORD)(ImageRelocation + 1);
-
-				for (int i = 0; i < count; i++)
-				{
-					if (list[i])
-					{
-						PDWORD ptr = (PDWORD)((LPBYTE)LoaderParams->ImageBase + (ImageRelocation->VirtualAddress + (list[i] & 0xFFF)));
-						*ptr += delta;
-					}
-				}
-				ImageRelocation = (PIMAGE_BASE_RELOCATION)((LPBYTE)ImageRelocation + ImageRelocation->SizeOfBlock);
-			}
-		}
-
-		PIMAGE_IMPORT_DESCRIPTOR ImportDesc = LoaderParams->ImportDir;
-		while (ImportDesc->Characteristics) {
-			PIMAGE_THUNK_DATA OrigFirstThunk = (PIMAGE_THUNK_DATA)((LPBYTE)LoaderParams->ImageBase + ImportDesc->OriginalFirstThunk);
-			PIMAGE_THUNK_DATA FirstThunk = (PIMAGE_THUNK_DATA)((LPBYTE)LoaderParams->ImageBase + ImportDesc->FirstThunk);
-
-			HMODULE hModule = LoaderParams->fnLoadLibraryA((LPCSTR)LoaderParams->ImageBase + ImportDesc->Name);
-
-			if (!hModule)
-				return FALSE;
-
-			while (OrigFirstThunk->u1.AddressOfData)
-			{
-				if (OrigFirstThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG)
-				{
-					// Import by ordinal
-					DWORD Function = (DWORD)LoaderParams->fnGetProcAddress(hModule,
-						(LPCSTR)(OrigFirstThunk->u1.Ordinal & 0xFFFF));
-
-					if (!Function)
-						return FALSE;
-
-					FirstThunk->u1.Function = Function;
-				}
-				else
-				{
-					// Import by name
-					PIMAGE_IMPORT_BY_NAME pIBN = (PIMAGE_IMPORT_BY_NAME)((LPBYTE)LoaderParams->ImageBase + OrigFirstThunk->u1.AddressOfData);
-					DWORD Function = (DWORD)LoaderParams->fnGetProcAddress(hModule, (LPCSTR)pIBN->Name);
-					if (!Function)
-						return FALSE;
-
-					FirstThunk->u1.Function = Function;
-				}
-				OrigFirstThunk++;
-				FirstThunk++;
-			}
-			ImportDesc++;
-		}
-
-		// if the dll has an entrypoint: 
-		if (LoaderParams->NtHeaders->OptionalHeader.AddressOfEntryPoint)
-		{
-			dllmain EntryPoint = (dllmain)((LPBYTE)LoaderParams->ImageBase + LoaderParams->NtHeaders->OptionalHeader.AddressOfEntryPoint);
-			return EntryPoint((HMODULE)LoaderParams->ImageBase, DLL_PROCESS_ATTACH, NULL); // Call the entry point 
-		}
-
-		return true;
-	}
-
-	// this is used to calculate the size of libraryloader function
-	DWORD WINAPI stub()
-	{
-		return 0;
-	}
-	BOOL MemInjectDll(HANDLE hProcess, const std::wstring & dll_path)
-	{
-		HANDLE hDll = CreateFile(dll_path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
-		if (hDll == INVALID_HANDLE_VALUE || hDll == NULL)
+			OutputDebugStr(L"Couldn't get handle for kernel32.dll");
 			return FALSE;
-		DWORD FileSize = GetFileSize(hDll, NULL);
-		LPVOID FileBuffer = VirtualAlloc(NULL, FileSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-		DWORD lpNumberOfBytesRead = 0;
-		ReadFile(hDll, FileBuffer, FileSize, &lpNumberOfBytesRead, NULL);
-		CloseHandle(hDll);
-
-
-		// Target Dll's headers:
-		PIMAGE_DOS_HEADER DosHeader = (PIMAGE_DOS_HEADER)FileBuffer;
-		PIMAGE_NT_HEADERS Ntheaders = (PIMAGE_NT_HEADERS)((LPBYTE)FileBuffer + DosHeader->e_lfanew);
-
-
-
-		// Allocate memory for the dll in target process: 
-		LPVOID Executablelmage = VirtualAllocEx(hProcess, 0, Ntheaders->OptionalHeader.SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-
-		// copy headers to target process:
-		WriteProcessMemory(hProcess, Executablelmage, FileBuffer, Ntheaders->OptionalHeader.SizeOfHeaders, NULL);
-
-		PIMAGE_SECTION_HEADER SectHeader = (PIMAGE_SECTION_HEADER)(Ntheaders + 1);
-
-		// copy sections of the dll to target process:
-		for (int i = 0; i < Ntheaders->FileHeader.NumberOfSections; i++)
-		{
-			WriteProcessMemory(
-				hProcess,
-				(PVOID)((LPBYTE)Executablelmage + SectHeader[i].VirtualAddress),
-				(PVOID)((LPBYTE)FileBuffer + SectHeader[i].PointerToRawData),
-				SectHeader[i].SizeOfRawData,
-				NULL
-				);
 		}
 
-		// initialize the parameters for LibraryLoader():
-		loaderdata LoaderParams;
-		LoaderParams.ImageBase = Executablelmage;
-		LoaderParams.NtHeaders = (PIMAGE_NT_HEADERS)((LPBYTE)Executablelmage + DosHeader->e_lfanew);
+		void *remoteMem =
+			VirtualAllocEx(hProcess, NULL, sizeof(dllPath), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		if (remoteMem)
+		{
+			if (!WriteProcessMemory(hProcess, remoteMem, (void *)dllPath, sizeof(dllPath), NULL))
+				return FALSE;
 
-		LoaderParams.BaseReloc = (PIMAGE_BASE_RELOCATION)((LPBYTE)Executablelmage +
-			Ntheaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
-		LoaderParams.ImportDir = (PIMAGE_IMPORT_DESCRIPTOR)((LPBYTE)Executablelmage +
-			Ntheaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-
-		LoaderParams.fnLoadLibraryA = LoadLibraryA;
-		LoaderParams.fnGetProcAddress = GetProcAddress;
-
-		//TODO: Does not work with debug build as the incrmental linker creates a lot of trampoline functions hence the pointer to the 
-		//TODO: function points to the trampoline and not the'actual' function. This causes the wrong code and size to be copied!
-		// Allocate Memory for the loader code:
-		DWORD LoaderCodeSize = (DWORD)stub - (DWORD)LibraryLoader;
-		DWORD LoaderTotalSize = LoaderCodeSize + sizeof(loaderdata);
-		LPVOID LoaderMemory = VirtualAllocEx(hProcess, NULL, LoaderTotalSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-
-		// Write the loader parameters to the process
-		WriteProcessMemory(hProcess, LoaderMemory, &LoaderParams, sizeof(loaderdata), 0);
-
-		// write the loader code to target process
-		WriteProcessMemory(hProcess, (PVOID)((loaderdata*)LoaderMemory + 1), LibraryLoader, LoaderCodeSize, NULL);
-
-		// create remote thread to execute the loader code:
-		//	HANDLE hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)((loaderdata*)LoaderMemory + 1), LoaderMemory, 0, NULL);
-		HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)((loaderdata*)LoaderMemory + 1), LoaderMemory, 0, NULL);
-
-		// 		std::cout << "Address of Loader: " << std::hex << LoaderMemory << std::endl;
-		// 		std::cout << "Address of Image: " << std::hex << Executablelmage << std::endl;
-		// 		std::cout << "Press any key, to exit!" << std::endl;
-
-		// Wait for the loader to finish executing
-		WaitForSingleObject(hThread, INFINITE);
-		VirtualFreeEx(hProcess, LoaderMemory, 0, MEM_RELEASE);
-		return TRUE;
+			HANDLE hThread = CreateRemoteThread(
+				hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)GetProcAddress(kernel32, "LoadLibraryW"),
+				remoteMem, 0, NULL);
+			if (hThread)
+			{
+				WaitForSingleObject(hThread, INFINITE);
+				CloseHandle(hThread);
+			}
+			VirtualFreeEx(hProcess, remoteMem, 0, MEM_RELEASE);
+			return TRUE;
+		}
+		else
+		{
+			OutputDebugStr(L"Couldn't allocate remote memory for DLL '%s'", lib_name.c_str());
+			return FALSE;
+		}
 	}
 
+	uintptr_t FindRemoteDLL(DWORD pid, wstring libNameSrc)
+	{
+		HANDLE hModuleSnap = INVALID_HANDLE_VALUE;
+		std::wstring libName(libNameSrc);
+		std::transform(libName.begin(), libName.end(), libName.begin(), towlower);
+
+		// up to 10 retries
+		for (int i = 0; i < 10; i++)
+		{
+			hModuleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid);
+
+			if (hModuleSnap == INVALID_HANDLE_VALUE)
+			{
+				DWORD err = GetLastError();
+
+				OutputDebugStr(L"CreateToolhelp32Snapshot(%u) -> 0x%08x", pid, err);
+
+				// retry if error is ERROR_BAD_LENGTH
+				if (err == ERROR_BAD_LENGTH)
+					continue;
+			}
+
+			// didn't retry, or succeeded
+			break;
+		}
+
+		if (hModuleSnap == INVALID_HANDLE_VALUE)
+		{
+			OutputDebugStr(L"Couldn't create toolhelp dump of modules in process %u", pid);
+			return 0;
+		}
+
+		MODULEENTRY32 me32 = { 0 };
+		me32.dwSize = sizeof(MODULEENTRY32);
+
+		BOOL success = Module32First(hModuleSnap, &me32);
+
+		if (success == FALSE)
+		{
+			DWORD err = GetLastError();
+
+			OutputDebugStr(L"Couldn't get first module in process %u: 0x%08x", pid, err);
+			CloseHandle(hModuleSnap);
+			return 0;
+		}
+
+		uintptr_t ret = 0;
+
+		int numModules = 0;
+
+		do
+		{
+			wchar_t modnameLower[MAX_MODULE_NAME32 + 1] = { 0 };
+			wcsncpy_s(modnameLower, me32.szModule, MAX_MODULE_NAME32);
+
+			wchar_t *wc = &modnameLower[0];
+			while (*wc)
+			{
+				*wc = towlower(*wc);
+				wc++;
+			}
+
+			numModules++;
+
+			if (wcsstr(modnameLower, libName.c_str()) == modnameLower)
+			{
+				ret = (uintptr_t)me32.modBaseAddr;
+			}
+		} while (ret == 0 && Module32Next(hModuleSnap, &me32));
+
+		if (ret == 0)
+		{
+			HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+
+			DWORD exitCode = 0;
+
+			if (h)
+				GetExitCodeProcess(h, &exitCode);
+
+			if (h == NULL || exitCode != STILL_ACTIVE)
+			{
+				OutputDebugStr(
+					L"Error injecting into remote process with PID %u which is no longer available.\n"
+					"Possibly the process has crashed during early startup, or is missing DLLs to run?",
+					pid);
+			}
+			else
+			{
+				OutputDebugStr(L"Couldn't find module '%s' among %d modules", libName.c_str(), numModules);
+			}
+
+			if (h)
+				CloseHandle(h);
+		}
+
+		CloseHandle(hModuleSnap);
+
+		return ret;
+	}
+
+
+
+
+
+	
 	const DWORD MS_VC_EXCEPTION = 0x406D1388;
 #pragma pack(push,8)  
 	typedef struct tagTHREADNAME_INFO
