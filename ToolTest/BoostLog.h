@@ -32,6 +32,24 @@ namespace boost_log
 
 
 BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(my_logger, boost::log::sources::wseverity_logger_mt< boost_log::severity_level >)
+/*
+以上宏展开为
+struct my_logger
+{
+	typedef boost::log::sources::wseverity_logger_mt< boost_log::severity_level > logger_type;
+	enum registration_line_t { registration_line = __LINE__ };
+	static const char* registration_file() { return __FILE__; }
+	static logger_type construct_logger();
+	static inline logger_type& get()
+	{
+		return ::boost::log::sources::aux::logger_singleton< my_logger >::get();
+	}
+};
+inline  my_logger::logger_type my_logger::construct_logger()
+{
+	return logger_type();
+}
+*/
 
 
 #define LOGW(n) BOOST_LOG_SEV(my_logger::get(), boost_log::n)
