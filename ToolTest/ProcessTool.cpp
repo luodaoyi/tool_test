@@ -8,6 +8,7 @@
 #include <psapi.h> 
 #include "ResManager.h"
 #include <algorithm>
+#include <ctype.h>
 namespace process_tool
 {
 	BOOL IsProcessRunning(DWORD dwPid)
@@ -708,10 +709,10 @@ namespace process_tool
 	std::vector<PROCESSENTRY32> GetPidsFromExeName(const std::wstring & szExeName, const  DWORD ParentId)
 	{
 		std::wstring search_exe_name_lower;
-		std::transform(szExeName.begin(), szExeName.end(), std::back_inserter(search_exe_name_lower) , tolower);
+		std::transform(szExeName.begin(), szExeName.end(), std::back_inserter(search_exe_name_lower) , towlower);
 		return GetPidsByCondition([& search_exe_name_lower, ParentId](const PROCESSENTRY32 & process_info){
 			std::wstring process_exe_name = process_info.szExeFile;
-			std::transform(process_exe_name.begin(), process_exe_name.end(), process_exe_name.begin(), tolower);
+			std::transform(process_exe_name.begin(), process_exe_name.end(), process_exe_name.begin(), towlower);
 			return process_exe_name == search_exe_name_lower && (ParentId == 0 || ParentId == process_info.th32ParentProcessID);
 		});
 	}
@@ -742,7 +743,7 @@ namespace process_tool
 
 	BOOL IsMutiInstance(const std::wstring & name)
 	{
-		HANDLE hMutex = ::CreateMutex(NULL, TRUE, name.c_str());
+		CreateMutex(NULL, TRUE, name.c_str());
 		if (::GetLastError() == ERROR_ALREADY_EXISTS)
 			return TRUE;
 		else

@@ -172,7 +172,7 @@ namespace boost_log
 			szFileName,
 			keywords::open_mode = std::ios_base::app,//追加方式
 			keywords::auto_flush = is_auto_flush,
-			keywords::rotation_size = 10 * 1024 * 1024,
+			keywords::rotation_size = 1 * 1024 * 1024,
 			//boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(boost::gregorian::greg_day(1)),//每月1号换日志文件
 			keywords::format = expr::stream
 			<< expr::format_date_time(timestamp, "%Y-%m-%d, %H:%M:%S")
@@ -244,6 +244,14 @@ namespace boost_log
 	void ResetFilter()
 	{
 		logging::core::get()->reset_filter();
+	}
+
+	void BackOldLog(const wchar_t * file_name,const wchar_t * dest_folder)
+	{
+		for (int i = 0; i < 10; i++)
+		{
+
+		}
 	}
 
 

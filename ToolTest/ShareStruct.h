@@ -15,7 +15,7 @@ public:
 	{
 		CreateShare(name);
 	}
-	VOID CShareStruct::CloseShare()
+	VOID CloseShare()
 	{
 		if (m_data_ptr)
 		{

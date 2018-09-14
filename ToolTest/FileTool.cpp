@@ -441,9 +441,7 @@ namespace file_tools
 			else
 			{
 				std::wstring strFileName = ffd.cFileName;
-				std::wstring strSuffix = strFileName.substr(strFileName.length() - 4);
-				if(strSuffix != L".log")
-					retFileNameList.push_back((strFolder + ffd.cFileName));
+				retFileNameList.push_back((strFolder + ffd.cFileName));
 			}
 		}while(FindNextFile(hFind,&ffd) != 0);
 		FindClose(hFind);

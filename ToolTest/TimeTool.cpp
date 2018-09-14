@@ -51,7 +51,6 @@ namespace time_tool
 		tm tm = { 0 };
 		localtime_s(&tm,&time);
 		wchar_t time_buffer[60] = { 0 };
-		//_wasctime_s(time_buffer, &tm);
 		swprintf_s(time_buffer, L"%04d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 		return time_buffer;
 	}

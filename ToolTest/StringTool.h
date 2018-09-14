@@ -6,6 +6,7 @@ using std::string;
 #include <vector>
 
 #include <stdio.h>
+#include <windows.h>
 
 using std::vector;
 
@@ -64,7 +65,7 @@ namespace string_tool
 	template<typename T>
 	void ReplaceStr(T &szContent,const T &szSrc,const T &szDst)
 	{
-		T::size_type pos = 0;
+		size_t pos = 0;
 		while ((pos = szContent.find(szSrc, pos)) != T::npos) {
 			szContent.replace(pos, szSrc.size(), szDst);
 			pos++;
@@ -76,5 +77,10 @@ namespace string_tool
 
 	std::string strlower(const std::string &str);
 	std::wstring strlower(const std::wstring &str);
+
+	DWORD GetRand_For_DWORD();
+
+	std::wstring SprintfStr(const wchar_t * fmt, ...);
+
 }
 

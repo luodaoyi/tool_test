@@ -189,7 +189,7 @@ namespace string_tool
 		}
 
 
-		int nCurPos = 0;
+
 		int nRemain = static_cast<int>( len);
 		DWORD cbRead = 0;
 		BYTE rgbFile[BUFMD5SIZE];
@@ -304,5 +304,23 @@ namespace string_tool
 		std::wstring newstr(str);
 		std::transform(newstr.begin(), newstr.end(), newstr.begin(), towlower);
 		return newstr;
+	}
+
+	DWORD GetRand_For_DWORD()
+	{
+		static DWORD dwSeed = ::GetTickCount();
+		srand(dwSeed);
+		dwSeed = rand() << 15 | rand();
+		return dwSeed;
+	}
+	std::wstring SprintfStr(const wchar_t * buffer, ...)
+	{
+		va_list pArgList;
+		va_start(pArgList, buffer);
+		WCHAR temp[MAX_PATH] = { 0 };
+		vswprintf_s(temp, buffer, pArgList);
+		va_end(pArgList);
+
+		return temp;
 	}
 }
