@@ -266,7 +266,22 @@ namespace string_tool
 		}
 		return pDest;
 	}
-
+	char * strcpy_my(char * szDest, const char * szSrc, size_t len )
+	{
+		size_t i = 0;
+		char * p = szDest;
+		try
+		{
+			while (*szSrc != '\0' && i++ < len)
+				*szDest++ = *szSrc++;
+			*szDest = '\0';
+		}
+		catch (...)
+		{
+			OutputDebugStr(L"!!!wstrcpy_myÒì³£");
+		}
+		return p;
+	}
 	/*
 	std::string string_format(const char *fmt, ...)
 	{

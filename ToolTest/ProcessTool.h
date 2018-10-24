@@ -1,8 +1,8 @@
 #pragma once
 
-#include "commom_include.h"
 #include <TlHelp32.h>
 #include <functional>
+#include <vector>
 namespace process_tool
 { 
 	enum {error_process_exit_code = 100};
@@ -26,7 +26,6 @@ namespace process_tool
 	DWORD StartProcessAndGetExitCode(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path = NULL);
 	BOOL InjectDllNormal(HANDLE hProcess, const std::wstring & lib_name);
 	uintptr_t FindRemoteDLL(DWORD pid, std::wstring libName);
-	BOOL MemInjectDll(HANDLE hProcess, const std::wstring & dll_path);
 
 
 	BOOL GetProcessExePath(DWORD dwPid, std::wstring & full_path);

@@ -145,14 +145,22 @@ namespace process_tool
 		codecaveAddress = VirtualAllocEx(hProcess, 0, 1024, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 		OutputDebugStr(L"Allocated code Addr:%x", codecaveAddress);
 		if (!codecaveAddress)
+		{
+			OutputDebugStr(L"!!!Allocated code Addr Failed");
 			return FALSE;
+		}
+			
 		dwCodecaveAddress = PtrToUlong(codecaveAddress);
 
 		//Allocate space for save loadlbiray ret
 		LPVOID dll_handle_address = VirtualAllocEx(hProcess, 0, sizeof(HMODULE), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 		OutputDebugStr(L"Allocated DllHandleAddr Addr:%x", dll_handle_address);
 		if (!dll_handle_address)
+		{
+			OutputDebugStr(L"!!!Allocated DllHandleAddr Addr Failed");
 			return FALSE;
+		}
+			
 		
 // 		dwTmpSize = 0x12345678;//test write memory
 // 		::WriteProcessMemory(hProcess, dll_handle_address, &dwTmpSize, sizeof(HMODULE), NULL);
@@ -524,7 +532,8 @@ namespace process_tool
 		VirtualProtectEx(hProcess, codecaveAddress, workspaceIndex, PAGE_EXECUTE_READWRITE, &oldProtect);
 
 		// Write out the patch
-		WriteProcessMemory(hProcess, codecaveAddress, workspace, workspaceIndex, &bytesRet);
+		if (!WriteProcessMemory(hProcess, codecaveAddress, workspace, workspaceIndex, &bytesRet))
+			OutputDebugStr(L"!!! WriteProcessMemory  codecaveAddress, workspace Failed!");
 
 		// Restore page protection
 		VirtualProtectEx(hProcess, codecaveAddress, workspaceIndex, oldProtect, &oldProtect);
@@ -538,6 +547,8 @@ namespace process_tool
 		// Execute the thread now and wait for it to exit, note we execute where the code starts, and not the codecave start
 		// (since we wrote strings at the start of the codecave) -- NOTE: void* used for VC6 compatibility instead of UlongToPtr
 		hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)((void*)codecaveExecAddr), 0, 0, NULL);
+		if(!hThread)
+			OutputDebugStr(L"!!!CreateRemoteThread Failed!");
 		WaitForSingleObject(hThread, INFINITE);
 
 		//Get DLl Handle
