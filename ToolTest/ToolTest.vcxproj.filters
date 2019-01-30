@@ -114,6 +114,9 @@
     <ClInclude Include="TimerFlag.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="CmdParse.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -190,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="TimerFlag.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdParse.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

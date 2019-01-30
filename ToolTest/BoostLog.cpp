@@ -172,7 +172,7 @@ namespace boost_log
 			szFileName,
 			keywords::open_mode = std::ios_base::app,//追加方式
 			keywords::auto_flush = is_auto_flush,
-			keywords::rotation_size = 1 * 1024 * 1024,
+			keywords::rotation_size = 20 * 1024 * 1024,
 			//boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(boost::gregorian::greg_day(1)),//每月1号换日志文件
 			keywords::format = expr::stream
 			<< expr::format_date_time(timestamp, "%Y-%m-%d, %H:%M:%S")
@@ -281,7 +281,17 @@ namespace boost_log
 		va_end(pArgList);
 		LogW(mode, temp);
 	}
-
+	void LogFmtWD(severity_level mode, const wchar_t * wszBuff, ...)
+	{
+#ifdef _DEBUG
+		va_list pArgList;
+		va_start(pArgList, wszBuff);
+		WCHAR temp[MAX_LOG_FMT_LEN] = { 0 };
+		vswprintf_s(temp, wszBuff, pArgList);
+		va_end(pArgList);
+		LogW(mode, temp);
+#endif
+	}
 	void LogFmtA(severity_level mode, const char * szBuff, ...)
 	{
 		va_list pArgList;

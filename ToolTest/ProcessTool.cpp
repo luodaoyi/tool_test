@@ -717,6 +717,16 @@ namespace process_tool
 			return NULL;
 	}
 
+	DWORD GetParentPid(DWORD dwPid)
+	{
+		auto pid_list =  GetPidsByCondition([dwPid](const PROCESSENTRY32 & process_info) {
+			return process_info.th32ProcessID == dwPid;
+		});
+		if (pid_list.size() > 0)
+			return pid_list[0].th32ParentProcessID;
+		return 0;
+	}
+
 	std::vector<PROCESSENTRY32> GetPidsFromExeName(const std::wstring & szExeName, const  DWORD ParentId)
 	{
 		std::wstring search_exe_name_lower;
@@ -724,7 +734,7 @@ namespace process_tool
 		return GetPidsByCondition([& search_exe_name_lower, ParentId](const PROCESSENTRY32 & process_info){
 			std::wstring process_exe_name = process_info.szExeFile;
 			std::transform(process_exe_name.begin(), process_exe_name.end(), process_exe_name.begin(), towlower);
-			return process_exe_name == search_exe_name_lower && (ParentId == 0 || ParentId == process_info.th32ParentProcessID);
+			return  process_exe_name == search_exe_name_lower && (ParentId == 0 || process_info.th32ParentProcessID == ParentId || GetParentPid(process_info.th32ParentProcessID) == ParentId);
 		});
 	}
 

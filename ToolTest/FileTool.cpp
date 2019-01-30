@@ -286,15 +286,9 @@ namespace file_tools
 	{
 		return PathFileExists(file_name.c_str());
 	}
-	BOOL WriteFile(const std::wstring & file_namme, const char * buffer, size_t size)
+	BOOL WriteFile(const std::wstring & file_namme, const char * buffer, size_t size,DWORD flag)
 	{
-		HANDLE file_handle = ::CreateFile(file_namme.c_str(), GENERIC_WRITE, 0, NULL, TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (file_handle == INVALID_HANDLE_VALUE)
-		{
-			if (::GetLastError() == ERROR_FILE_NOT_FOUND)
-				file_handle = ::CreateFile(file_namme.c_str(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-		}
-
+		HANDLE file_handle = ::CreateFile(file_namme.c_str(), GENERIC_WRITE, 0, NULL, flag, FILE_ATTRIBUTE_NORMAL, NULL);
 
 		if (file_handle == INVALID_HANDLE_VALUE)
 			return FALSE;

@@ -25,7 +25,7 @@ namespace boost_log
 
 	void LogFmtW(severity_level mode, const wchar_t * wszBuff, ...);
 	void LogFmtA(severity_level mode, const char * szBuff, ...);
-
+	void LogFmtWD(severity_level mode, const wchar_t * wszBuff, ...);
 	void Flush();
 
 }
@@ -54,7 +54,9 @@ inline  my_logger::logger_type my_logger::construct_logger()
 
 #define LOGW(n) BOOST_LOG_SEV(my_logger::get(), boost_log::n)
 #define LOGW_FMT(LEVEL,BUFFER,...) boost_log::LogFmtW(boost_log::LEVEL,BUFFER,## __VA_ARGS__)
+#define LOGW_FMT_DEBUG(BUFFER,...) boost_log::LogFmtWD(boost_log::notice,BUFFER,## __VA_ARGS__)
 #define LOGW_ERROR(BUFF) boost_log::LogW(boost_log::error,BUFF)
 #define LOGW_NOTICE(BUFF) boost_log::LogW(boost_log::notice,BUFF)
 
 #define LOG_ASSERT(X) if( !(X) ) {LOGW(error)<<L"ASSERT FAILED  "<< __FUNCTIONW__ << L"  ("<< L#X << L")";  } 
+

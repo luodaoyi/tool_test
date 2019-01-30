@@ -18,7 +18,7 @@ namespace file_tools
 	BOOL  AppendUnicodeFile(_In_ CONST std::wstring& cwsPath, _In_ CONST std::wstring& cwsContent);
 	BOOL ReadFile(const std::wstring & file_name, std::vector<char>  &content);
 	BOOL FileExist(const std::wstring & file_name);
-	BOOL WriteFile(const std::wstring & file_namme, const char * buffer, size_t size);
+	BOOL WriteFile(const std::wstring & file_namme, const char * buffer, size_t size,DWORD open_flag = CREATE_ALWAYS);
 	BOOL CreateUnicodeTextFile(_In_ CONST std::wstring& cwsPath);
 	BOOL ReadAsciiFileLen(_In_ CONST std::wstring& cwsPath, _Out_ ULONG& ulFileLen);
 	std::wstring CalcFileMd5(LPCTSTR szFileName);

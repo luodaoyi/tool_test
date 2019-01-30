@@ -21,6 +21,12 @@ namespace string_tool
 	}
 
 	template<>
+	int lexical_cast<int, std::string>(const std::string & s)
+	{
+		return std::stoi(s);
+	}
+
+	template<>
 	unsigned long lexical_cast<unsigned long,std::wstring>(const std::wstring &  s)
 	{
 		return std::stoul(s);
@@ -272,7 +278,7 @@ namespace string_tool
 		char * p = szDest;
 		try
 		{
-			while (*szSrc != '\0' && i++ < len)
+			while (*szSrc != '\0' && i++ < len-1)
 				*szDest++ = *szSrc++;
 			*szDest = '\0';
 		}

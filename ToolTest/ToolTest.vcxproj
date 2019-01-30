@@ -156,6 +156,7 @@
     <ClInclude Include="ClassInstance.h" />
     <ClInclude Include="CLResManager.h" />
     <ClInclude Include="CLSearchBase.h" />
+    <ClInclude Include="CmdParse.h" />
     <ClInclude Include="commom_include.h" />
     <ClInclude Include="DebugOutput.h" />
     <ClInclude Include="FileTool.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="AsmTool.cpp" />
     <ClCompile Include="BoostLog.cpp" />
     <ClCompile Include="CLSearchBase.cpp" />
+    <ClCompile Include="CmdParse.cpp" />
     <ClCompile Include="DebugOutput.cpp" />
     <ClCompile Include="FileTool.cpp" />
     <ClCompile Include="IniFile.cpp" />

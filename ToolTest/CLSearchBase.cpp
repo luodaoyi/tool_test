@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CLSearchBase.h"
 #include "AsmTool.h"
+#include <vector>
 
 CLSearchBase::CLSearchBase()
 {
@@ -88,6 +89,31 @@ BOOL CLSearchBase::SearchBase(LPCSTR szCode, DWORD * pArray, UINT& puLen, LPCWST
 	BOOL	bRetCode = FALSE;
 
 	//将字符串转换成BYTE数组
+	//32C08BE55DC3538D45F050E8????????687455BA0250E8????????8B4DF88AD88B45F02BC883C40883F901
+	//32 C0 8B E5 5D C3 53 8D 45 F0 50 E8 ?? ?? ?? ?? 68 74 55 BA 02 50 E8 ?? ?? ?? ?? 8B 4D F8 8A D8 8B 45 F0 2B C8 83 C4 08 83 F9 01
+	std::vector<DWORD> out_array;
+	size_t len = strlen(szCode);
+	size_t i = 0;
+	while (i < len)
+	{
+		if (szCode[i] == ' ')
+		{
+			i += 1;
+		}
+		else if (szCode[i] == '?')
+		{
+			out_array.push_back(0x100);
+			i += 2;
+		}
+		else
+		{
+			std::string schar(szCode + i, 2);
+			DWORD nByte = strtol(schar.c_str(), NULL, 16);
+			out_array.push_back(nByte);
+			i += 2;
+		}
+	}
+	/*
 	UINT uCodeLen = static_cast<UINT>(strlen(szCode)) / 2;
 	if (strlen(szCode) % 2 != 0)
 	{
@@ -110,7 +136,7 @@ BOOL CLSearchBase::SearchBase(LPCSTR szCode, DWORD * pArray, UINT& puLen, LPCWST
 			pCode[i] = 0x100;
 		}
 	}
-
+	*/
 	//初始化
 	::GetSystemInfo(&si);
 	HANDLE hProcess = ::GetCurrentProcess();
@@ -130,7 +156,7 @@ BOOL CLSearchBase::SearchBase(LPCSTR szCode, DWORD * pArray, UINT& puLen, LPCWST
 		if (mbi.State == MEM_COMMIT && (mbi.Protect == PAGE_EXECUTE_READ || mbi.Protect == PAGE_EXECUTE_READWRITE))
 		{
 			std::vector<int> vlst;
-			CL_sunday(pCode, uCodeLen, (PBYTE)mbi.BaseAddress, mbi.RegionSize, vlst);
+			CL_sunday(out_array.data(), out_array.size(), (PBYTE)mbi.BaseAddress, mbi.RegionSize, vlst);
 
 			for (UINT i = 0; i < vlst.size() && puLen < 10; ++i)
 			{
@@ -149,7 +175,6 @@ BOOL CLSearchBase::SearchBase(LPCSTR szCode, DWORD * pArray, UINT& puLen, LPCWST
 	{
 		bRetCode = TRUE;
 	}
-	delete[] pCode;
 	return bRetCode;
 }
 
@@ -213,9 +238,9 @@ DWORD CLSearchBase::FindCALL(LPCSTR lpszCode, int nOffset, DWORD dwModuleAddr, i
 		//首先计算相对地址
 		DWORD dwRelativeAddr = dwAddr - (dwModuleAddr + 0x1000) + 0x1000 + nMov;
 		dwRelativeAddr += dwModuleAddr;
-		DWORD dwReadAddr = asm_tool::ReadDWORD(dwRelativeAddr);
-		dwReadAddr += 4;
-		dwReadAddr += dwRelativeAddr;
+		DWORD dwReadAddr = asm_tool::ReadDWORD(dwRelativeAddr);//dwRelativeAddr = [0x00de6ea3+1]=FFC98798
+		dwReadAddr += 4;//FFC98798+4 = FFC9879C
+		dwReadAddr += dwRelativeAddr;//FFC9879C + (0x00de6ea3+1) =  100A7F640
 		dwCALL = dwReadAddr & 0xFFFFFFFF;
 	}
 
