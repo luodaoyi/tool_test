@@ -6,6 +6,7 @@ class CCmdParse
 {
 public:
 	void Parse(int argc, wchar_t * argv[]);
+	void Parse(const std::wstring & s);
 	bool OptionExist(const std::wstring & name) const;
 	std::wstring GetStrVal(const std::wstring & key, const std::wstring & default_val);
 	int GetIntVal(const std::wstring & key, int default_val);

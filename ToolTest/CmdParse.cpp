@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CmdParse.h"
 
+#include "StringTool.h"
 
 #include <vector>
 #include <string>
@@ -21,6 +22,43 @@ void CCmdParse::Parse(int argc, wchar_t * argv[])
 		}
 	}
 }
+void CCmdParse::Parse(const std::wstring & s)
+{
+	std::wstring::size_type begin_pos = -1;
+	std::wstring::size_type end_pos = 0;
+	for (std::size_t i = 0; i < s.length(); i++)
+	{
+		if (s[i] == L' ')
+		{
+			end_pos = i;
+			std::wstring param = s.substr(begin_pos, end_pos - 1);
+			if (param.length() > 0)
+				m_cmd_list.push_back(param);
+			begin_pos = -1;
+		}
+		else
+		{
+			if (begin_pos == -1)
+				begin_pos = i;
+		}
+
+	}
+	if (begin_pos < s.length() - 1)
+		m_cmd_list.push_back(s.substr(begin_pos));
+	m_cmd_list = string_tool::SplitStrByFlag<std::wstring>(s, L" ");
+
+	for (const std::wstring & option : m_cmd_list)
+	{
+		auto equal_pos = option.find(L'=');
+		if (equal_pos != std::wstring::npos && equal_pos < option.length() - 1)
+		{
+			std::wstring key = option.substr(0, equal_pos);
+			std::wstring val = option.substr(equal_pos + 1);
+			m_key_values[key] = val;
+		}
+	}
+}
+
 bool CCmdParse::OptionExist(const std::wstring & name) const
 {
 	for (const std::wstring & s : m_cmd_list)
