@@ -23,6 +23,8 @@ namespace file_tools
 	BOOL ReadAsciiFileLen(_In_ CONST std::wstring& cwsPath, _Out_ ULONG& ulFileLen);
 	std::wstring CalcFileMd5(LPCTSTR szFileName);
 	BOOL GetFileNameList(std::vector<std::wstring> & retFileNameList, const std::wstring & strFolder, const std::wstring & suffix);
+	std::wstring ReadUtf8FileStr(const std::wstring & file_name);
+	void WriteUtf8FileStr(const std::wstring & file_name, const std::wstring & file_context,bool bom = true);
 }
 
 

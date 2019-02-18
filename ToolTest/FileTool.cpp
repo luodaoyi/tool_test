@@ -442,6 +442,25 @@ namespace file_tools
 		return TRUE;
 	}
 
+
+	std::wstring ReadUtf8FileStr(const std::wstring & file_name)
+	{
+		std::vector<char> data;
+		ReadFile(file_name, data);
+		if (data.size() == 0)
+			return L"";
+		std::string str(data.data(), data.size());
+		//if (str[0] == 0xef && str[1] == 0xbb && str[2] == 0xbf)
+		//	str = str.substr(3);
+		return string_tool::utf8_to_wstring(str);
+	}
+	void WriteUtf8FileStr(const std::wstring & file_name, const std::wstring & file_context,bool bom)
+	{
+		std::string str_utf8 = string_tool::wstring_to_utf8(file_context);
+		WriteFile(file_name, str_utf8.c_str(), str_utf8.length());
+	}
+	
+
 }
 
 
