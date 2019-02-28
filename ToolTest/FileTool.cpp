@@ -14,6 +14,7 @@
 #include <memory>
 #include "DebugOutput.h"
 #include <mutex>
+#include <algorithm>
 
 
 #include "ResManager.h"
@@ -459,8 +460,50 @@ namespace file_tools
 		std::string str_utf8 = string_tool::wstring_to_utf8(file_context);
 		WriteFile(file_name, str_utf8.c_str(), str_utf8.length());
 	}
-	
+	std::wstring GetFileType(const std::wstring & file_name)
+	{
+		auto pos = file_name.rfind(L'.');
+		if (pos != std::wstring::npos)
+		{
+			std::wstring type_str = file_name.substr(pos + 1);
+			std::transform(type_str.begin(), type_str.end(), type_str.begin(), tolower);
+			return type_str;
+		}
+		return std::wstring();
+	}
+	BOOL GetFileNameListNoPath(std::vector<std::wstring> & retFileNameList, const std::wstring & strFolder, const std::wstring & suffix)
+	{
+		WIN32_FIND_DATAW ffd;
+		HANDLE hFind = INVALID_HANDLE_VALUE;
+		WCHAR szFindDir[MAX_PATH] = { 0 };
+		wcscpy_s(szFindDir, strFolder.c_str());
+		wcscat_s(szFindDir, suffix.c_str());
+		hFind = FindFirstFile(szFindDir, &ffd);
 
+		if (INVALID_HANDLE_VALUE == hFind)
+		{
+			//::MessageBoxA(NULL,"hFind is INVALID_HANDLE_VALUE",NULL,MB_OK);
+			return FALSE;;
+		}
+
+		BOOL bRet = FALSE;
+		do
+		{
+			if (wcscmp(ffd.cFileName, L".") == 0 || wcscmp(ffd.cFileName, L"..") == 0)
+				continue;
+			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				GetFileNameList(retFileNameList, strFolder + ffd.cFileName + L"\\", suffix);
+			}
+			else
+			{
+				std::wstring strFileName = ffd.cFileName;
+				retFileNameList.push_back(( ffd.cFileName));
+			}
+		} while (FindNextFile(hFind, &ffd) != 0);
+		FindClose(hFind);
+		return TRUE;
+	}
 }
 
 
