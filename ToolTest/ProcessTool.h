@@ -11,6 +11,7 @@ namespace process_tool
 	BOOL InjectDll_CallFunc(DWORD dwPid,const std::wstring & dll_path,const std::wstring & dll_func_name,HMODULE  * injected_dll_module = NULL);
 	BOOL FreeRemoteDll(DWORD dwPid, HMODULE hDll);
 	BOOL StartProcess(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid = NULL ,BOOL bInherit = FALSE,_Out_ PHANDLE phProcess = NULL, _Out_ PHANDLE phThread = NULL);
+	BOOL StartProcessWithToken(HANDLE hToken, LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid = NULL, BOOL bInherit = FALSE, _Out_ PHANDLE phProcess = NULL, _Out_ PHANDLE phThread = NULL);
 	BOOL StartProcessAndInjectDllAndCallDllFunc(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, const std::wstring & dll_path, const std::wstring & dll_func_name, _Out_ DWORD & Pid, _Out_ PHANDLE phProcess = NULL, _Out_ PHANDLE phThread = NULL);
 	DWORD GetPidFromExeName(const std::wstring & szExeName, const DWORD ParentPid = 0);
 	std::vector<PROCESSENTRY32>  GetPidsFromExeName(const std::wstring & szExeName, const DWORD dwParendId = 0);

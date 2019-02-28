@@ -641,6 +641,30 @@ namespace process_tool
 		}
 	}
 
+	BOOL StartProcessWithToken(HANDLE hToken, LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid , BOOL bInherit , _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread )
+	{
+		STARTUPINFO si = { 0 };
+		PROCESS_INFORMATION pi = { 0 };
+		si.cb = sizeof(STARTUPINFO);
+		BOOL bOk = ::CreateProcessAsUser(hToken,app_name, (LPWSTR)cmd_line, NULL, NULL, bInherit, dwCreateFlag, NULL, cur_path, &si, &pi);
+		if (!bOk)
+			return FALSE;
+		else
+		{
+			if (!phProcess)
+				::CloseHandle(pi.hProcess);
+			else
+				*phProcess = pi.hProcess;
+			if (!phThread)
+				::CloseHandle(pi.hThread);
+			else
+				*phThread = pi.hThread;
+			if (Pid)
+				*Pid = pi.dwProcessId;
+			return TRUE;
+		}
+	}
+
 	DWORD StartProcessAndGetExitCode(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path )
 	{
 		HANDLE process_handle = INVALID_HANDLE_VALUE;
