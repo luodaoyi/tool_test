@@ -138,7 +138,7 @@ namespace process_tool
 		_snprintf_s(injectError1, MAX_PATH, "Could not load the dll: %s", injectDllName);
 		_snprintf_s(injectError2, MAX_PATH, "Could not load the function: %s", injectFuncName);
 
-		// Create the workspace
+		// StartCmdSession the workspace
 		workspace = (LPBYTE)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, 1024);
 
 		// Allocate space for the codecave in the process
