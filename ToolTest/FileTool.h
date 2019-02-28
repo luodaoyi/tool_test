@@ -25,6 +25,9 @@ namespace file_tools
 	BOOL GetFileNameList(std::vector<std::wstring> & retFileNameList, const std::wstring & strFolder, const std::wstring & suffix);
 	std::wstring ReadUtf8FileStr(const std::wstring & file_name);
 	void WriteUtf8FileStr(const std::wstring & file_name, const std::wstring & file_context,bool bom = true);
+	std::wstring GetFileType(const std::wstring & file_path);
+	BOOL GetFileNameListNoPath(std::vector<std::wstring> & retFileNameList, const std::wstring & strFolder, const std::wstring & suffix);
+	
 }
 
 
