@@ -28,6 +28,8 @@ namespace boost_log
 	void LogFmtWD(severity_level mode, const wchar_t * wszBuff, ...);
 	void Flush();
 
+	void CheckForDelLogs( std::wstring  s,uint64_t max_file_size = 10485760);
+
 }
 
 

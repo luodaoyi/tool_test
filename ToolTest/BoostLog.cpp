@@ -27,6 +27,7 @@
 #include <boost/core/null_deleter.hpp>
 #include "StringTool.h"
 #include "DebugOutput.h"
+#include "filetool.h"
 
 namespace boost_log
 {
@@ -300,6 +301,49 @@ namespace boost_log
 		vsprintf_s(temp, szBuff, pArgList);
 		va_end(pArgList);
 		LogA(mode, temp);
+	}
+
+	void CheckForDelLogs( std::wstring  log_file_part, uint64_t max_file_size )
+	{
+		std::transform(
+			log_file_part.begin(), log_file_part.end(),
+			log_file_part.begin(),
+			towlower);
+
+
+		std::vector<std::wstring> log_file_list;
+		file_tools::GetFileNameListNoPath(log_file_list, file_tools::GetCurrentAppPath(), L"*.log");
+		LARGE_INTEGER total_file_size;
+		total_file_size.QuadPart = 0;
+		std::vector<std::wstring> real_file_list;
+		for (auto file_name : log_file_list)
+		{
+
+			std::transform(
+				file_name.begin(), file_name.end(),
+				file_name.begin(),
+				towlower);
+			if (file_name.find(log_file_part) != std::wstring::npos)
+			{
+				real_file_list.push_back((file_tools::GetCurrentAppPath() + file_name));
+				HANDLE file_handle = ::CreateFile((file_tools::GetCurrentAppPath() + file_name).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (file_handle)
+				{
+					LARGE_INTEGER large_intger;
+					large_intger.QuadPart = 0;
+					::GetFileSizeEx(file_handle, &large_intger);
+					CloseHandle(file_handle);
+					total_file_size.QuadPart += large_intger.QuadPart;
+				}
+			}
+
+		}
+
+		if (total_file_size.QuadPart > max_file_size)
+		{
+			for (auto file_name : real_file_list)
+				DeleteFile(file_name.c_str());
+		}
 	}
 }
 
