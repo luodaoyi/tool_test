@@ -504,6 +504,17 @@ namespace file_tools
 		FindClose(hFind);
 		return TRUE;
 	}
+
+
+	std::wstring GetTempFolder()
+	{
+		wchar_t path[MAX_PATH] = { 0 };
+		GetTempPath(MAX_PATH, path);
+		std::wstring ret_path = path;
+		if (ret_path.back() != L'\\')
+			ret_path += L'\\';
+		return ret_path;
+	}
 }
 
 

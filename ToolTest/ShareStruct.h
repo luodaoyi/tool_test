@@ -54,7 +54,7 @@ public:
 		return m_data_ptr;
 	}
 
-	BOOL CreateShare(LPCWSTR map_name)
+	BOOL CreateShare(LPCWSTR map_name, SECURITY_ATTRIBUTES * sa = NULL)
 	{
 		if (!map_name || wcslen(map_name) == 0)
 		{
@@ -66,7 +66,7 @@ public:
 			OutputDebugStr(L"!!try to create share twice!");
 			return FALSE;
 		}
-		m_map_file_handle = ::CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(TShareType), map_name);
+		m_map_file_handle = ::CreateFileMapping(INVALID_HANDLE_VALUE, sa, PAGE_READWRITE, 0, sizeof(TShareType), map_name);
 		if (system_tool::IsValidHandle(m_map_file_handle))
 		{
 			m_share_type = CREATOR;
