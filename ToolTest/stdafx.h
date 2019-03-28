@@ -18,3 +18,4 @@
 #include "DebugOutput.h"
 #include "BoostLog.h"
 #include "FileTool.h"
+#include "BoostLog.h"

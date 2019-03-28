@@ -9,6 +9,11 @@
 #include "ResManager.h"
 #include <algorithm>
 #include <ctype.h>
+#include "BoostLog.h"
+
+
+
+
 namespace process_tool
 {
 	BOOL IsProcessRunning(DWORD dwPid)
@@ -617,11 +622,15 @@ namespace process_tool
 	}
 
 
-	BOOL StartProcess(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid,BOOL bInherit, _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread )
+	BOOL StartProcess(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid,BOOL bInherit, _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread ,BOOL isHide)
 	{
 		STARTUPINFO si = { 0 };
 		PROCESS_INFORMATION pi = { 0 };
 		si.cb = sizeof(STARTUPINFO);
+
+		if (isHide)
+			si.dwFlags = STARTF_USESHOWWINDOW;
+
 		BOOL bOk = ::CreateProcess(app_name, (LPWSTR)cmd_line, NULL, NULL, bInherit, dwCreateFlag, NULL, cur_path, &si, &pi);
 		if (!bOk)
 			return FALSE;
@@ -641,11 +650,13 @@ namespace process_tool
 		}
 	}
 
-	BOOL StartProcessWithToken(HANDLE hToken, LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid , BOOL bInherit , _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread )
+	BOOL StartProcessWithToken(HANDLE hToken, LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path, DWORD dwCreateFlag, _Out_ DWORD * Pid , BOOL bInherit , _Out_ PHANDLE phProcess , _Out_ PHANDLE phThread,BOOL ishide)
 	{
 		STARTUPINFO si = { 0 };
 		PROCESS_INFORMATION pi = { 0 };
 		si.cb = sizeof(STARTUPINFO);
+		if (ishide)
+			si.dwFlags = STARTF_USESHOWWINDOW;
 		BOOL bOk = ::CreateProcessAsUser(hToken,app_name, (LPWSTR)cmd_line, NULL, NULL, bInherit, dwCreateFlag, NULL, cur_path, &si, &pi);
 		if (!bOk)
 			return FALSE;
@@ -665,12 +676,12 @@ namespace process_tool
 		}
 	}
 
-	DWORD StartProcessAndGetExitCode(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path )
+	DWORD StartProcessAndGetExitCode(LPCWSTR app_name, LPCWSTR cmd_line, LPCWSTR cur_path,DWORD max_time,BOOL isHide )
 	{
 		HANDLE process_handle = INVALID_HANDLE_VALUE;
 		HANDLE thread_handle = INVALID_HANDLE_VALUE;
 		std::wstring process_name = app_name ? app_name : cmd_line;
-		if (!StartProcess(app_name, cmd_line, cur_path, 0, 0, 0, &process_handle, &thread_handle))
+		if (!StartProcess(app_name, cmd_line, cur_path, 0, 0, 0, &process_handle, &thread_handle,isHide))
 		{
 			DWORD last_error = ::GetLastError();
 			OutputDebugStr(L"创建进程%s出错,错误ID:%d", process_name.c_str(), last_error);
@@ -680,14 +691,16 @@ namespace process_tool
 		SetResDeleter(process_handle, [](HANDLE & h){if(h && h != INVALID_HANDLE_VALUE) CloseHandle(h); });
 		SetResDeleter(thread_handle, [](HANDLE & h){if (h && h != INVALID_HANDLE_VALUE) CloseHandle(h); });
 
-		DWORD wait_ret = ::WaitForSingleObject(process_handle, INFINITE);
+		LOGW(notice) << L"等待进程结束。。。";
+		DWORD wait_ret = ::WaitForSingleObject(process_handle, max_time);
 		if (wait_ret == WAIT_OBJECT_0)
 		{
+			LOGW(notice) << L"进程结束";
 			DWORD ret_code = error_process_exit_code;
 			if (!GetExitCodeProcess(process_handle, &ret_code))
 			{
 				DWORD last_error = 0;
-				OutputDebugStr(L"StartProcessAndGetExitCode GetExitCodeProcess Failed:%d", GetLastError());
+				LOGW(error)<<L"StartProcessAndGetExitCode GetExitCodeProcess Failed:" << GetLastError();
 				return error_process_exit_code;
 			}
 			else
@@ -695,7 +708,7 @@ namespace process_tool
 		}
 		else
 		{
-			OutputDebugStr(L"Wait Process %s Failed", process_name.c_str());
+			LOGW_FMT(error,L"Wait Process %s Failed", process_name.c_str());
 			return error_process_exit_code;
 		}
 	}

@@ -15,7 +15,7 @@ namespace system_tool
 	BOOL LockMutex(HANDLE hHandle, DWORD  dwMilliseconds);
 	VOID UnLockMutex(HANDLE hHandle);
 	BOOL DoActionTimeOut(DWORD dwMilliseconds, std::function<ACTION_RET(void)> fn);
-
+	//std::wstring 
 
 	class CriticalSection
 	{
