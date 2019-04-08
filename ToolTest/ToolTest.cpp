@@ -29,7 +29,7 @@ using namespace std;
 //测试韩服资源名称转换
 #include "Language.h"
 #include <functional>
-
+#include "verification.h"
 void MyMessageBox(const char * szBuff)
 {
 	if (szBuff)
@@ -170,9 +170,29 @@ int _tmain(int argc, _TCHAR* argv[])
 // 	test.erase(test.begin() + 2);
 // 	std::cout << *pInt << std::endl;
 
-	float hp = 425.0f;
-	float hp_max = 2000.5f;
-	std::cout << (DWORD)(hp / hp_max * 100) << std::endl;
+	wchar_t value[MAX_PATH] = { 0 };
+	wcscpy_s(value, L"vasfsfasdfsadfs");
+
+	HKEY hKey = NULL;
+	DWORD dwVal = 0;
+	LONG lnRes = RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Zds\\Hosp", 0, NULL, NULL, KEY_ALL_ACCESS, NULL, &hKey, &dwVal);
+	if (lnRes == ERROR_SUCCESS)
+	{
+
+	}
+
+	wchar_t msg_buffer[MAX_PATH] = { 0 };
+	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, lnRes, 0, msg_buffer, MAX_PATH, NULL);
+
+
+
+	lnRes = RegSetValueEx(hKey,
+		L"PC_UUID",
+		0,
+		REG_SZ,
+		(CONST BYTE*)value,
+		_tcslen(value) * sizeof(TCHAR));
+	RegCloseKey(hKey);
 
 
 	system("pause");

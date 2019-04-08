@@ -45,7 +45,8 @@ namespace string_tool
 			}
 			else
 			{
-				strRet.push_back(strTemp.substr(nStartPos, strTemp.length() - nStartPos));
+				if((strTemp.length() - nStartPos) > nStartPos)
+					strRet.push_back(strTemp.substr(nStartPos, strTemp.length() - nStartPos));
 				break;
 			}
 		};
