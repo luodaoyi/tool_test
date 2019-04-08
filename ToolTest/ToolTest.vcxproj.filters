@@ -45,9 +45,6 @@
     <ClInclude Include="CLSearchBase.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="commom_include.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="DebugOutput.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -86,9 +83,6 @@
     </ClInclude>
     <ClInclude Include="Language.h">
       <Filter>other</Filter>
-    </ClInclude>
-    <ClInclude Include="CLResManager.h">
-      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="TimeTool.h">
       <Filter>common</Filter>

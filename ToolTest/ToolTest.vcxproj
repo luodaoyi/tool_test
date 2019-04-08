@@ -154,10 +154,8 @@
     <ClInclude Include="AsmTool.h" />
     <ClInclude Include="BoostLog.h" />
     <ClInclude Include="ClassInstance.h" />
-    <ClInclude Include="CLResManager.h" />
     <ClInclude Include="CLSearchBase.h" />
     <ClInclude Include="CmdParse.h" />
-    <ClInclude Include="commom_include.h" />
     <ClInclude Include="DebugOutput.h" />
     <ClInclude Include="FileTool.h" />
     <ClInclude Include="IniFile.h" />
