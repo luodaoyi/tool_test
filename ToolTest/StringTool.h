@@ -16,6 +16,10 @@ namespace string_tool
 	T lexical_cast(const T2 & s);
 	wstring CharToWide(const char * szBuf);
 	string WideToChar(const wchar_t * szWBuf);
+
+	wstring CharToWide(const std::string & s);
+	string WideToChar(const std::wstring & s);
+
 	template<typename T = std::wstring>
 	std::vector<T> SplitStrByFlag(const T & str, const T& strFlag)
 	{
@@ -45,7 +49,7 @@ namespace string_tool
 			}
 			else
 			{
-				if((strTemp.length() - nStartPos) > nStartPos)
+				if(strTemp.length() - 1 > nStartPos)
 					strRet.push_back(strTemp.substr(nStartPos, strTemp.length() - nStartPos));
 				break;
 			}

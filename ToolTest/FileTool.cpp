@@ -126,6 +126,21 @@ namespace file_tools
 		else
 			return L"";
 	}
+
+	std::wstring GetFileByPathFile(const std::wstring & strPathFile)
+	{
+		wstring strLocalFullPath = strPathFile;
+		WCHAR szDir[256], szDrive[20], szName[256], szExt[60];
+		if (_wsplitpath_s(strLocalFullPath.c_str(),
+			szDrive, 20,
+			szDir, 256,
+			szName, 256,
+			szExt, 60
+		) == 0)
+			return  std::wstring(szName) + szExt;//为了得到文件夹
+		else
+			return L"";
+	}
 	BOOL IsValidFilePath(const std::wstring & file_path)
 	{
 		WCHAR szDir[256] = {0};
