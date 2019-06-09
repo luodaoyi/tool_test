@@ -49,6 +49,8 @@ namespace string_tool
 			strlen(szBuf),
 			NULL,
 			0);
+		if (nLenBytesRequire <= 0)
+			return L"";
 		std::vector<wchar_t> buffer(nLenBytesRequire);
 		auto new_size = ::MultiByteToWideChar(CP_ACP,
 			0,
@@ -71,6 +73,8 @@ namespace string_tool
 			NULL,
 			&bOk
 			);
+		if (nLen <= 0)
+			return "";
 		std::vector<char> dest_buffer(nLen);
 		//char * szBuf = new char[nLen];
 		int new_size = ::WideCharToMultiByte(CP_ACP,
@@ -93,6 +97,8 @@ namespace string_tool
 			s.length(),
 			NULL,
 			0);
+		if (nLenBytesRequire <= 0)
+			return L"";
 		std::vector<wchar_t> buffer(nLenBytesRequire);
 		auto new_size = ::MultiByteToWideChar(CP_ACP,
 			0,
@@ -115,6 +121,8 @@ namespace string_tool
 			NULL,
 			&bOk
 		);
+		if (nLen <= 0)
+			return "";
 		std::vector<char> dest_buffer(nLen);
 		//char * szBuf = new char[nLen];
 		int new_size = ::WideCharToMultiByte(CP_ACP,

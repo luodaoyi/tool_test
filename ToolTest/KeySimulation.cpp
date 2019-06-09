@@ -1,7 +1,7 @@
-﻿
+﻿#include "stdafx.h"
 #include "KeySimulation.h"
+#include "ResManager.h"
 #include <cstdlib>
-#include <ProcessLib/Common/ResHandleManager.h>
 #pragma comment(lib,"Gdi32.lib")
 
 #pragma warning(disable : 4706)

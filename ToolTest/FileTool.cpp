@@ -174,6 +174,13 @@ namespace file_tools
 		return current_app_path;
 	}
 
+	std::wstring GetCurrentPath()
+	{
+		wchar_t buff[MAX_PATH] = { 0 };
+		GetCurrentDirectory(MAX_PATH, buff);
+		return std::wstring(buff) + L"\\";
+	}
+
 
 	template<size_t nSize>
 	inline void ModifyPathSpec(TCHAR(&szDst)[nSize], BOOL  bAddSpec)

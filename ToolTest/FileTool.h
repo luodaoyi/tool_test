@@ -4,12 +4,14 @@
 
 
 #include <vector>
+#include <Windows.h>
 
 namespace file_tools
 { 
 	std::vector<std::string> ReadAsciiFileLines(const std::wstring & file_name);
 	std::vector<std::wstring> ReadUnicodeFileLines(const std::wstring & file_name);
 	const std::wstring GetCurrentAppPath();
+	std::wstring GetCurrentPath();
 	std::wstring GetPathByPathFile(const std::wstring & strPathFile);
 	std::wstring GetFileByPathFile(const std::wstring & strPathFile);
 	BOOL  CreateDirectoryNested(const std::wstring &  path);//嵌套创建文件夹

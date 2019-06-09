@@ -13,6 +13,7 @@
 #include <time.h>
 #include "StringTool.h"
 
+#include <sstream>
 namespace time_tool
 {
 	bool GetTimeFromString(const std::wstring & s ,time_t & ret_time)
@@ -50,9 +51,9 @@ namespace time_tool
 	{
 		tm tm = { 0 };
 		localtime_s(&tm,&time);
-		wchar_t time_buffer[60] = { 0 };
-		swprintf_s(time_buffer, L"%04d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-		return time_buffer;
+		std::wostringstream oss;
+		oss << std::put_time(&tm, L"%F %X");
+		return oss.str();
 	}
 
 	SYSTEMTIME  GetCurTime()

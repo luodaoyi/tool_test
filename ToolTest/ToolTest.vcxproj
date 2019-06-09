@@ -87,6 +87,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(BOOST_PATH)</AdditionalIncludeDirectories>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -178,6 +179,7 @@
     <ClInclude Include="TimerFlag.h" />
     <ClInclude Include="TimeTool.h" />
     <ClInclude Include="tinyxml2.h" />
+    <ClInclude Include="SimpleLog.h" />
     <ClInclude Include="Verification.h" />
   </ItemGroup>
   <ItemGroup>
@@ -211,6 +213,7 @@
     <ClCompile Include="tinyxml2.cpp" />
     <ClCompile Include="ToolTest.cpp" />
     <ClCompile Include="HandleMy.cpp" />
+    <ClCompile Include="SimpleLog.cpp" />
     <ClCompile Include="Verification.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

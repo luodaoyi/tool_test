@@ -37,7 +37,7 @@ void CIniFile::SetFileName(const std::wstring & file_name)
 	else
 	{
 		//单个文件 加上当前路径
-		m_file_path_name = file_tools::GetCurrentAppPath() + file_name;
+		m_file_path_name = file_tools::GetCurrentPath() + file_name;
 		if (!PathFileExists(m_file_path_name.c_str()))
 			file_tools::CreateUnicodeTextFile(m_file_path_name);
 	}

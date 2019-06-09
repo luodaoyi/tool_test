@@ -3,9 +3,9 @@
 
 
 void SetDbgOutput(bool b);
-VOID OutputDebugStr(const WCHAR * buffer, ...);
-VOID OutputDebugStrA(const char * buffer, ...);
+void OutputDebugStr(const wchar_t * buffer, ...);
+void OutputDebugStrA(const char * buffer, ...);
 
-VOID DebugShowMsg(const WCHAR * buffer, ...);
+void DebugShowMsg(const wchar_t * buffer, ...);
 
-VOID StdCout(const WCHAR * buffer);
+void StdCout(const wchar_t * buffer);
