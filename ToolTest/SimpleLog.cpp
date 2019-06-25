@@ -85,6 +85,11 @@ void CSimpleLog::SetFile(const std::wstring & file_name)
 	m_file_name = file_name;
 }
 
+std::wstring CSimpleLog::GetFileName() const
+{
+	return m_file_name;
+}
+
 bool CSimpleLog::OpenFile()
 {
 	if(m_file_handle && m_file_handle != INVALID_HANDLE_VALUE)

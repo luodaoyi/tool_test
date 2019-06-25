@@ -32,6 +32,7 @@ public:
 	void LogFmt(const wchar_t * buffer, ...);
 	void SetPipe(int index,const std::wstring & host = L"." );
 	void SetFile(const std::wstring & file_name);
+	std::wstring GetFileName() const;
 public:
 	class CRecordPump
 	{
