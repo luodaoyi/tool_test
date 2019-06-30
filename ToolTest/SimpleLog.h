@@ -76,4 +76,5 @@ CSimpleLog::CRecordPump MakeRecordPump(CSimpleLog & log, CSimpleLog::severity_le
 #define SIMPLE_LOG(log)  MakeRecordPump(log).GetStream()
 #define SIMPLE_LOG_LEVEL(log,l)  MakeRecordPump(log,CSimpleLog::l).GetStream()
 #define SIMPLE_LOG_MEMBER(l) MakeRecordPump(m_log,CSimpleLog::l).GetStream()
+#define GLOG(l) MakeRecordPump(CSimpleLog::GetInstance(),CSimpleLog::l).GetStream()
 #endif
