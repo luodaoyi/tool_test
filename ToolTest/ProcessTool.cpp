@@ -12,6 +12,11 @@
 #include "BoostLog.h"
 
 
+#ifdef _USING_V110_SDK71_
+#pragma comment(lib,"psapi.lib")
+#endif
+
+
 
 
 namespace process_tool

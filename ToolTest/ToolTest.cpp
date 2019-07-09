@@ -119,6 +119,151 @@ struct Test
 
 
 #include "TimeTool.h"
+
+#include "wininet.h"
+#pragma comment(lib,"wininet.lib")
+
+std::wstring GetWebUrl()
+{
+	std::wstring ini_file_name = file_tools::GetCurrentAppPath() + L"config.ini";
+	wchar_t buffer[MAX_PATH] = { 0 };
+	::GetPrivateProfileString(L"设置", L"url", L"http://192.168.0.214:8000", buffer, MAX_PATH, ini_file_name.c_str());
+	return std::wstring(buffer);
+}
+
+BOOL DeleteUrlCache(BOOL bDeleteCache,
+	BOOL bDeleteCacheIndex)
+{
+	TCHAR szUserProfile[200];
+	TCHAR szFilePath[200];
+	HANDLE hCacheEnumHandle = NULL;
+	LPINTERNET_CACHE_ENTRY_INFO lpCacheEntry = NULL;
+	DWORD  dwSize = 4096; // initial buffer size
+
+	// Delete index.dat if requested. Be sure that index.dat is not locked.
+	if (bDeleteCacheIndex)
+	{
+		// Retrieve from environment user profile path.
+		ExpandEnvironmentStrings(L"%userprofile%", szUserProfile,
+			sizeof(szUserProfile));
+		wsprintf(szFilePath, L"%s%s", szUserProfile,
+			"\\Local Settings\\Temporary Internet Files\\Content.IE5\\index.dat");
+
+		DeleteFile(szFilePath);
+
+		if (!bDeleteCache)
+			return TRUE;
+	}
+
+	// Enable initial buffer size for cache entry structure.
+	lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
+	lpCacheEntry->dwStructSize = dwSize;
+
+	// URL search pattern (1st parameter) options are:  NULL ("*.*"), "cookie:", 
+	// or "visited:".
+	hCacheEnumHandle = FindFirstUrlCacheEntry(NULL /* in */,
+		lpCacheEntry /* out */, &dwSize /* in, out */);
+
+	// First, obtain handle to internet cache with FindFirstUrlCacheEntry
+	// for later use with FindNextUrlCacheEntry.
+	if (hCacheEnumHandle != NULL)
+	{
+		// When cache entry is not a cookie, delete entry. 
+		if (!(lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+		{
+			DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+		}
+	}
+	else
+	{
+		switch (GetLastError())
+		{
+		case ERROR_INSUFFICIENT_BUFFER:
+			lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
+			lpCacheEntry->dwStructSize = dwSize;
+
+			// Repeat first step search with adjusted buffer, exit if not
+			// found again (in practice one buffer's size adustment is  
+			// always OK).
+			hCacheEnumHandle = FindFirstUrlCacheEntry(NULL, lpCacheEntry,
+				&dwSize);
+			if (hCacheEnumHandle != NULL)
+			{
+				// When cache entry is not a cookie, delete entry. 
+				if (!(lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+				{
+					DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+				}
+				break;
+			}
+			else
+			{
+				// FindFirstUrlCacheEntry fails again, return.
+				return FALSE;
+			}
+		default:
+			FindCloseUrlCache(hCacheEnumHandle);
+			return FALSE;
+		}
+	}
+
+	// Next, use hCacheEnumHandle obtained from the previous step to delete 
+	// subsequent items of the cache.
+	do
+	{
+		// Notice that return values of FindNextUrlCacheEntry (BOOL) and 
+		// FindFirstUrlCacheEntry (HANDLE) are different.
+		if (FindNextUrlCacheEntry(hCacheEnumHandle, lpCacheEntry, &dwSize))
+		{
+			// When cache entry is not a cookie, delete entry. 
+			if (!(lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+			{
+				DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+			}
+		}
+		else
+		{
+			switch (GetLastError())
+			{
+			case ERROR_INSUFFICIENT_BUFFER:
+				lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO)
+					new char[dwSize];
+				lpCacheEntry->dwStructSize = dwSize;
+
+				// Repeat next step search with adjusted buffer, exit if 
+				// error comes up again ((in practice one buffer's size 
+				// adustment is always OK).
+				if (FindNextUrlCacheEntry(hCacheEnumHandle, lpCacheEntry,
+					&dwSize))
+				{
+					// When cache entry is not a cookie, delete entry. 
+					if (!(lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+					{
+						DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+					}
+					break;
+				}
+				else
+				{
+					// FindFirstUrlCacheEntry fails again, return.
+					FindCloseUrlCache(hCacheEnumHandle);
+					return FALSE;
+				}
+				break;
+			case ERROR_NO_MORE_ITEMS:
+				FindCloseUrlCache(hCacheEnumHandle);
+				return TRUE;
+			default:
+				FindCloseUrlCache(hCacheEnumHandle);
+				return FALSE;
+			}
+		}
+	} while (TRUE);
+
+	return FALSE; // never here
+}
+
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 
@@ -170,6 +315,13 @@ int _tmain(int argc, _TCHAR* argv[])
 // 	test.erase(test.begin() + 2);
 // 	std::cout << *pInt << std::endl;
 
+
+	//auto ret = ::DeleteUrlCacheEntry(L"http://192.168.0.214:8000");//ERROR_ACCESS_DENIED
+	//auto error = GetLastError();
+
+	DeleteUrlCache(TRUE, TRUE);
+	/*
+
 	wchar_t value[MAX_PATH] = { 0 };
 	wcscpy_s(value, L"vasfsfasdfsadfs");
 
@@ -196,6 +348,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 	system("pause");
+	*/
 	return 0;
 }
 
