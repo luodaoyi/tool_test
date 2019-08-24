@@ -1,11 +1,15 @@
-#include "stdafx.h"
+
+
+#include <winsock2.h>
+#pragma comment(lib, "Ws2_32.lib")
+
 #include "SimpleLog.h"
 #include "DebugOutput.h"
 #include <ctime>
 #include  <iostream>
 #include <iomanip>
 #include <sstream>
-
+#include <ws2tcpip.h>
 CSimpleLog::CSimpleLog()
 {
 	m_file_handle = INVALID_HANDLE_VALUE;
@@ -15,6 +19,8 @@ CSimpleLog::~CSimpleLog()
 {
 	::CloseHandle(m_file_handle);
 	m_file_handle =  INVALID_HANDLE_VALUE;
+	m_udp_switch = false;
+	m_pipe_switch = false;
 }
 
 std::wstring CSimpleLog::GetFileLineHead()
@@ -42,6 +48,8 @@ void CSimpleLog::Log(const std::wstring & str)
 	WriteFile(dest_str.c_str(), dest_str.length() * sizeof(wchar_t));
 	if (m_pipe_switch)
 		SendPipe(GetPipeLineHead() + str);
+	if (m_udp_switch)
+		SendUdp(GetPipeLineHead() + str);
 }
 
 void CSimpleLog::WriteFile(LPCVOID  pData, size_t size)
@@ -90,6 +98,32 @@ std::wstring CSimpleLog::GetFileName() const
 	return m_file_name;
 }
 
+void CSimpleLog::SetUdp(int index, const std::string & ip)
+{
+	if (index == -1)
+	{
+		m_udp_switch = false;
+		return;
+	}
+		
+
+	m_udp_switch = true;
+
+	static bool init_sock = false;
+	if (!init_sock)
+	{
+		init_sock = true;
+		WSADATA wsaData = { 0 };
+		WSAStartup(MAKEWORD(2, 2), &wsaData);
+	}
+
+	udp_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	ZeroMemory(&recv_addr, sizeof(recv_addr));
+	recv_addr.sin_family = AF_INET;
+	recv_addr.sin_port = htons(10120+index);
+
+	inet_pton(AF_INET, ip.c_str(), &recv_addr.sin_addr.s_addr);
+}
 bool CSimpleLog::OpenFile()
 {
 	if(m_file_handle && m_file_handle != INVALID_HANDLE_VALUE)
@@ -203,7 +237,10 @@ void CSimpleLog::SendPipe(const std::wstring & s)
 	if (!::WriteFile(m_pipe, s.c_str(), static_cast<DWORD>(s.size() * sizeof(wchar_t)), &temp, NULL))
 		m_is_connected = false;
 }
-
+void CSimpleLog::SendUdp(const std::wstring & s)
+{
+	auto ret = sendto(udp_socket, (char*)s.c_str(), s.length() * sizeof(wchar_t), 0, (SOCKADDR *)& recv_addr, sizeof(recv_addr));
+}
 
 
 CSimpleLog::CRecordPump MakeRecordPump(CSimpleLog & log, CSimpleLog::severity_level l)

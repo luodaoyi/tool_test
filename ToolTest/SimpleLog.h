@@ -3,12 +3,13 @@
 #define UnitLogH
 
 #include <string>
-#include <windows.h>
+
 #include <mutex>
 #include <sstream>
 
 
-
+#include <WinSock2.h>
+#include <windows.h>
 
 class CSimpleLog
 {
@@ -32,6 +33,7 @@ public:
 	void LogFmt(const wchar_t * buffer, ...);
 	void SetPipe(int index,const std::wstring & host = L"." );
 	void SetFile(const std::wstring & file_name);
+	void SetUdp(int index, const std::string & ip);
 	std::wstring GetFileName() const;
 public:
 	class CRecordPump
@@ -55,6 +57,7 @@ public:
 	};
 private:
 	void SendPipe(const std::wstring & s);
+	void SendUdp(const std::wstring & s);
 	bool OpenFile();
 	bool ConnectPipe();
 	void WriteFile(LPCVOID  pData, size_t size);
@@ -62,12 +65,19 @@ private:
 	std::wstring GetPipeLineHead();
 private:
 	std::mutex m_mutex;
-	HANDLE m_file_handle;
-	HANDLE m_pipe;
+	HANDLE m_file_handle = INVALID_HANDLE_VALUE;
+	HANDLE m_pipe = INVALID_HANDLE_VALUE;
 	bool m_pipe_switch = false;
 	std::wstring m_pipe_name;
 	std::wstring m_file_name;
 	bool m_is_connected = false;
+
+	sockaddr_in recv_addr = { 0 };
+
+	bool m_udp_switch = false;
+	typedef UINT_PTR        SOCKET;
+	SOCKET udp_socket;
+
 	CSimpleLog(const CSimpleLog &) = delete;
 	void operator ==(const CSimpleLog &) = delete;
 };

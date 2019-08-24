@@ -1,6 +1,7 @@
 ﻿// ToolTest.cpp : 定义控制台应用程序的入口点。
 //
 
+#include "SimpleLog.h"
 #include "stdafx.h"
 #include "StringTool.h"
 
@@ -123,7 +124,7 @@ struct Test
 #include <io.h>
 #include <fcntl.h>
 
-#include "SimpleLog.h"
+
 
 #include <boost/log/sources/logger.hpp>
 
