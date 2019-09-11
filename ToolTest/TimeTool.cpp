@@ -47,6 +47,25 @@ namespace time_tool
 		return ret;
 	}
 
+	time_t GetTimeFromSysTime(SYSTEMTIME sys_time)
+	{
+		struct std::tm tm = { 0 };
+		tm.tm_year = sys_time.wYear;
+		tm.tm_mon = sys_time.wMonth;
+		tm.tm_mday = sys_time.wDay;
+		tm.tm_hour = sys_time.wHour;
+		tm.tm_min = sys_time.wMinute;
+		tm.tm_sec = sys_time.wSecond;
+
+		tm.tm_year -= 1900;
+		tm.tm_mon -= 1;
+		time_t ret_time = mktime(&tm);
+		if (-1 == ret_time)
+			return 0;
+		else
+			return ret_time;
+	}
+
 	std::wstring TimeToString(const time_t time)
 	{
 		tm tm = { 0 };

@@ -9,4 +9,5 @@ namespace time_tool
 	SYSTEMTIME GetCurTime();
 	std::wstring SecondToString(const time_t time);
 	SYSTEMTIME GetTimeStruct(time_t time);
+	time_t GetTimeFromSysTime(SYSTEMTIME sys_time);
 }

@@ -9,13 +9,3 @@
 
 #include <stdio.h>
 #include <tchar.h>
-
-#include <windows.h>
-#include <assert.h>
-// TODO:  在此处引用程序需要的其他头文件
-#include "StringTool.h"
-
-#include "DebugOutput.h"
-#include "BoostLog.h"
-#include "FileTool.h"
-#include "BoostLog.h"

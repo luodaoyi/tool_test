@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "DebugOutput.h"
 
 #include <windows.h>
