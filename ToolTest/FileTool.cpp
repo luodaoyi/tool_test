@@ -126,6 +126,21 @@ namespace file_tools
 		else
 			return L"";
 	}
+
+	std::wstring GetFileByPathFile(const std::wstring & strPathFile)
+	{
+		wstring strLocalFullPath = strPathFile;
+		WCHAR szDir[256], szDrive[20], szName[256], szExt[60];
+		if (_wsplitpath_s(strLocalFullPath.c_str(),
+			szDrive, 20,
+			szDir, 256,
+			szName, 256,
+			szExt, 60
+		) == 0)
+			return  std::wstring(szName) + szExt;//为了得到文件夹
+		else
+			return L"";
+	}
 	BOOL IsValidFilePath(const std::wstring & file_path)
 	{
 		WCHAR szDir[256] = {0};
@@ -157,6 +172,13 @@ namespace file_tools
 			current_app_path = GetPathByPathFile(current_exe_file_path);
 		}
 		return current_app_path;
+	}
+
+	std::wstring GetCurrentPath()
+	{
+		wchar_t buff[MAX_PATH] = { 0 };
+		GetCurrentDirectory(MAX_PATH, buff);
+		return std::wstring(buff) + L"\\";
 	}
 
 
@@ -270,7 +292,7 @@ namespace file_tools
 	{
 
 		HANDLE file_handle = ::CreateFile(file_name.c_str(),
-			GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (file_handle == INVALID_HANDLE_VALUE)
 			return FALSE;
 		SetResDeleter(file_handle, [](HANDLE & p){::CloseHandle(p); });

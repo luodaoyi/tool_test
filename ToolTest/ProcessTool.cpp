@@ -9,7 +9,7 @@
 #include "ResManager.h"
 #include <algorithm>
 #include <ctype.h>
-#include "BoostLog.h"
+
 
 
 #ifdef _USING_V110_SDK71_
@@ -696,16 +696,16 @@ namespace process_tool
 		SetResDeleter(process_handle, [](HANDLE & h){if(h && h != INVALID_HANDLE_VALUE) CloseHandle(h); });
 		SetResDeleter(thread_handle, [](HANDLE & h){if (h && h != INVALID_HANDLE_VALUE) CloseHandle(h); });
 
-		LOGW(notice) << L"等待进程结束。。。";
+		//LOGW(notice) << L"等待进程结束。。。";
 		DWORD wait_ret = ::WaitForSingleObject(process_handle, max_time);
 		if (wait_ret == WAIT_OBJECT_0)
 		{
-			LOGW(notice) << L"进程结束";
+			//LOGW(notice) << L"进程结束";
 			DWORD ret_code = error_process_exit_code;
 			if (!GetExitCodeProcess(process_handle, &ret_code))
 			{
 				DWORD last_error = 0;
-				LOGW(error)<<L"StartProcessAndGetExitCode GetExitCodeProcess Failed:" << GetLastError();
+				//LOGW(error)<<L"StartProcessAndGetExitCode GetExitCodeProcess Failed:" << GetLastError();
 				return error_process_exit_code;
 			}
 			else
@@ -713,7 +713,7 @@ namespace process_tool
 		}
 		else
 		{
-			LOGW_FMT(error,L"Wait Process %s Failed", process_name.c_str());
+			//LOGW_FMT(error,L"Wait Process %s Failed", process_name.c_str());
 			return error_process_exit_code;
 		}
 	}

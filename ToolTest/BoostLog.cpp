@@ -53,10 +53,16 @@ namespace boost_log
 		bool Connnect()
 		{
 			//先关闭之前的pipe
+			static DWORD last_connect = 0;
+			if (GetTickCount() - last_connect > 10000)
+				last_connect = GetTickCount();
+			else
+				return false;
+
 			if (m_pipe && m_pipe != INVALID_HANDLE_VALUE)
 				::CloseHandle(m_pipe);
 
-			m_pipe = CreateFile(m_pipe_name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+			m_pipe = CreateFile(m_pipe_name.c_str(), GENERIC_READ | GENERIC_WRITE, 0,0, OPEN_EXISTING, 0, NULL);
 			if (m_pipe != INVALID_HANDLE_VALUE)
 			{
 				DWORD dwMode = PIPE_READMODE_MESSAGE;
@@ -72,7 +78,8 @@ namespace boost_log
 			}
 			else
 			{
-				if (::GetLastError() == ERROR_PIPE_BUSY)
+				auto last_error = ::GetLastError();
+				if (last_error == ERROR_PIPE_BUSY)
 					OutputDebugStr(L"ERROR_PIPE_BUSY  busy!");
 				m_is_connected = false;
 			}
@@ -89,7 +96,7 @@ namespace boost_log
 		/*!
 		* Constructor. Initializes the sink backend.
 		*/
-		basic_indexed_debug_output_backend(unsigned index) : m_pipe_name(L"\\\\.\\pipe\\zds_debug_" + std::to_wstring(index))
+		basic_indexed_debug_output_backend(unsigned index,const std::wstring & host_name = L".") : m_pipe_name(L"\\\\" + host_name + L"\\pipe\\zds_debug_" + std::to_wstring(index))
 		{
 			OutputDebugStr(L"basic_indexed_debug_output_backend 构造:%s", m_pipe_name.c_str());
 			//Connnect();
@@ -189,14 +196,14 @@ namespace boost_log
 	}
 
 
-	void InitDebugShow(unsigned index ) 
+	void InitDebugShow(unsigned index, const wchar_t * host_name )
 	{
 		static bool is_init = false;
 		if (is_init)
 			return;
 		is_init = true;
 		typedef sinks::synchronous_sink< basic_indexed_debug_output_backend<wchar_t>> debug_output_sync_sink_t;
-		boost::shared_ptr<basic_indexed_debug_output_backend<wchar_t>> backend_ptr = boost::make_shared<basic_indexed_debug_output_backend<wchar_t>>(index);
+		boost::shared_ptr<basic_indexed_debug_output_backend<wchar_t>> backend_ptr = boost::make_shared<basic_indexed_debug_output_backend<wchar_t>>(index, host_name ? host_name : L".");
 		boost::shared_ptr<debug_output_sync_sink_t> debutg_output_sink(new debug_output_sync_sink_t(backend_ptr));
 		// 		std::locale loc2 = std::locale("");
 		//  		debutg_output_sink->imbue(loc2);
@@ -312,7 +319,7 @@ namespace boost_log
 
 
 		std::vector<std::wstring> log_file_list;
-		file_tools::GetFileNameListNoPath(log_file_list, file_tools::GetCurrentAppPath(), L"*.log");
+		file_tools::GetFileNameListNoPath(log_file_list, file_tools::GetCurrentPath(), L"*.log");
 		LARGE_INTEGER total_file_size;
 		total_file_size.QuadPart = 0;
 		std::vector<std::wstring> real_file_list;
@@ -325,8 +332,8 @@ namespace boost_log
 				towlower);
 			if (file_name.find(log_file_part) != std::wstring::npos)
 			{
-				real_file_list.push_back((file_tools::GetCurrentAppPath() + file_name));
-				HANDLE file_handle = ::CreateFile((file_tools::GetCurrentAppPath() + file_name).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				real_file_list.push_back((file_tools::GetCurrentPath() + file_name));
+				HANDLE file_handle = ::CreateFile((file_tools::GetCurrentPath() + file_name).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 				if (file_handle)
 				{
 					LARGE_INTEGER large_intger;

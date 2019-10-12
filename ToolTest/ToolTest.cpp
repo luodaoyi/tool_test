@@ -120,6 +120,7 @@ struct Test
 
 #include "TimeTool.h"
 
+<<<<<<< HEAD
 #include "wininet.h"
 #pragma comment(lib,"wininet.lib")
 
@@ -262,11 +263,22 @@ BOOL DeleteUrlCache(BOOL bDeleteCache,
 
 	return FALSE; // never here
 }
+=======
+#include <io.h>
+#include <fcntl.h>
+
+#include "SimpleLog.h"
+
+#include <boost/log/sources/logger.hpp>
+
+>>>>>>> d8cc9fb66f0ae8682f04ee62fc18db8ae0aa3201
 
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	_setmode(_fileno(stdout), _O_U16TEXT);
 
+<<<<<<< HEAD
 // 	std::string temp = "zhangdongsheng";
 // 
 // 	std::vector<char> data;
@@ -329,26 +341,23 @@ int _tmain(int argc, _TCHAR* argv[])
 	DWORD dwVal = 0;
 	LONG lnRes = RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Zds\\Hosp", 0, NULL, NULL, KEY_ALL_ACCESS, NULL, &hKey, &dwVal);
 	if (lnRes == ERROR_SUCCESS)
+=======
+	while (true)
+>>>>>>> d8cc9fb66f0ae8682f04ee62fc18db8ae0aa3201
 	{
-
+		std::wcout << (GetAsyncKeyState(VK_DIVIDE) & 0x0001) << std::endl;
+		Sleep(200);
 	}
-
-	wchar_t msg_buffer[MAX_PATH] = { 0 };
-	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, lnRes, 0, msg_buffer, MAX_PATH, NULL);
+		
 
 
 
-	lnRes = RegSetValueEx(hKey,
-		L"PC_UUID",
-		0,
-		REG_SZ,
-		(CONST BYTE*)value,
-		_tcslen(value) * sizeof(TCHAR));
-	RegCloseKey(hKey);
 
-
+<<<<<<< HEAD
 	system("pause");
 	*/
+=======
+>>>>>>> d8cc9fb66f0ae8682f04ee62fc18db8ae0aa3201
 	return 0;
 }
 
