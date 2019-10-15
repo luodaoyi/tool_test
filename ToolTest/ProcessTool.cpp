@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <Windows.h>
 #include "ProcessTool.h"
 #include "StringTool.h"
 #include "DebugOutput.h"
@@ -10,11 +11,14 @@
 #include <algorithm>
 #include <ctype.h>
 
+<<<<<<< HEAD
 
 
 #ifdef _USING_V110_SDK71_
 #pragma comment(lib,"psapi.lib")
 #endif
+=======
+>>>>>>> b6511b88ba75d001a9609e276e567adc4089cb00
 
 
 
