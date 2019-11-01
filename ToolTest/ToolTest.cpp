@@ -1,6 +1,7 @@
 ﻿// ToolTest.cpp : 定义控制台应用程序的入口点。
 //
 
+#include "SimpleLog.h"
 #include "stdafx.h"
 #include "StringTool.h"
 
@@ -119,188 +120,19 @@ struct Test
 
 
 #include "TimeTool.h"
-
-<<<<<<< HEAD
-#include "wininet.h"
-#pragma comment(lib,"wininet.lib")
-
-std::wstring GetWebUrl()
-{
-	std::wstring ini_file_name = file_tools::GetCurrentAppPath() + L"config.ini";
-	wchar_t buffer[MAX_PATH] = { 0 };
-	::GetPrivateProfileString(L"设置", L"url", L"http://192.168.0.214:8000", buffer, MAX_PATH, ini_file_name.c_str());
-	return std::wstring(buffer);
-}
-
-BOOL DeleteUrlCache(BOOL bDeleteCache,
-	BOOL bDeleteCacheIndex)
-{
-	TCHAR szUserProfile[200];
-	TCHAR szFilePath[200];
-	HANDLE hCacheEnumHandle = NULL;
-	LPINTERNET_CACHE_ENTRY_INFO lpCacheEntry = NULL;
-	DWORD  dwSize = 4096; // initial buffer size
-
-	// Delete index.dat if requested. Be sure that index.dat is not locked.
-	if (bDeleteCacheIndex)
-	{
-		// Retrieve from environment user profile path.
-		ExpandEnvironmentStrings(L"%userprofile%", szUserProfile,
-			sizeof(szUserProfile));
-		wsprintf(szFilePath, L"%s%s", szUserProfile,
-			"\\Local Settings\\Temporary Internet Files\\Content.IE5\\index.dat");
-
-		DeleteFile(szFilePath);
-
-		if (!bDeleteCache)
-			return TRUE;
-	}
-
-	// Enable initial buffer size for cache entry structure.
-	lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
-	lpCacheEntry->dwStructSize = dwSize;
-
-	// URL search pattern (1st parameter) options are:  NULL ("*.*"), "cookie:", 
-	// or "visited:".
-	hCacheEnumHandle = FindFirstUrlCacheEntry(NULL /* in */,
-		lpCacheEntry /* out */, &dwSize /* in, out */);
-
-	// First, obtain handle to internet cache with FindFirstUrlCacheEntry
-	// for later use with FindNextUrlCacheEntry.
-	if (hCacheEnumHandle != NULL)
-	{
-		// When cache entry is not a cookie, delete entry. 
-		if (!(lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
-		{
-			DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
-		}
-	}
-	else
-	{
-		switch (GetLastError())
-		{
-		case ERROR_INSUFFICIENT_BUFFER:
-			lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
-			lpCacheEntry->dwStructSize = dwSize;
-
-			// Repeat first step search with adjusted buffer, exit if not
-			// found again (in practice one buffer's size adustment is  
-			// always OK).
-			hCacheEnumHandle = FindFirstUrlCacheEntry(NULL, lpCacheEntry,
-				&dwSize);
-			if (hCacheEnumHandle != NULL)
-			{
-				// When cache entry is not a cookie, delete entry. 
-				if (!(lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
-				{
-					DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
-				}
-				break;
-			}
-			else
-			{
-				// FindFirstUrlCacheEntry fails again, return.
-				return FALSE;
-			}
-		default:
-			FindCloseUrlCache(hCacheEnumHandle);
-			return FALSE;
-		}
-	}
-
-	// Next, use hCacheEnumHandle obtained from the previous step to delete 
-	// subsequent items of the cache.
-	do
-	{
-		// Notice that return values of FindNextUrlCacheEntry (BOOL) and 
-		// FindFirstUrlCacheEntry (HANDLE) are different.
-		if (FindNextUrlCacheEntry(hCacheEnumHandle, lpCacheEntry, &dwSize))
-		{
-			// When cache entry is not a cookie, delete entry. 
-			if (!(lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
-			{
-				DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
-			}
-		}
-		else
-		{
-			switch (GetLastError())
-			{
-			case ERROR_INSUFFICIENT_BUFFER:
-				lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO)
-					new char[dwSize];
-				lpCacheEntry->dwStructSize = dwSize;
-
-				// Repeat next step search with adjusted buffer, exit if 
-				// error comes up again ((in practice one buffer's size 
-				// adustment is always OK).
-				if (FindNextUrlCacheEntry(hCacheEnumHandle, lpCacheEntry,
-					&dwSize))
-				{
-					// When cache entry is not a cookie, delete entry. 
-					if (!(lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
-					{
-						DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
-					}
-					break;
-				}
-				else
-				{
-					// FindFirstUrlCacheEntry fails again, return.
-					FindCloseUrlCache(hCacheEnumHandle);
-					return FALSE;
-				}
-				break;
-			case ERROR_NO_MORE_ITEMS:
-				FindCloseUrlCache(hCacheEnumHandle);
-				return TRUE;
-			default:
-				FindCloseUrlCache(hCacheEnumHandle);
-				return FALSE;
-			}
-		}
-	} while (TRUE);
-
-	return FALSE; // never here
-}
-=======
-#include <io.h>
-#include <fcntl.h>
-
-#include "SimpleLog.h"
-
-#include <boost/log/sources/logger.hpp>
-
->>>>>>> d8cc9fb66f0ae8682f04ee62fc18db8ae0aa3201
-
-
 int _tmain(int argc, _TCHAR* argv[])
 {
-	_setmode(_fileno(stdout), _O_U16TEXT);
 
-<<<<<<< HEAD
 // 	std::string temp = "zhangdongsheng";
 // 
 // 	std::vector<char> data;
 // 	data.resize(temp.length());
 // 	memset(data.data(), 1, data.size());
 
-	//std::copy(szBuff, szBuff + strlen(szBuff), data.begin());
-	//std::copy(temp.begin(), temp.end(), data.begin());
-	//system("pause");
 
-// 	CInlineHook Hook((DWORD)::MessageBoxA, (DWORD)nakedPrivateChat,0);
-// 	Hook.Hook();
-// 	::MessageBoxA(NULL, "4124141", NULL, MB_OK);
-	
-// 	HWND hWnd = FindWindow(NULL, L"LUA_SHOW_DEBUG");
-// 	//SetWindowPos(hWnd, HWND_TOP, -100, 0, 500, 800, SWP_NOSIZE);
-// 	MoveWindow(hWnd, -100, 0, 500, 800, TRUE);
 
-// 	size_t len = std::wstring(L"이런. 아이 하나 때문에 곤란을").length();
-// 
-// 	CLanguage & language = CLanguage::GetInstance();
-// 	std::wstring s = language.GetOtherText_By_LocalText(L"부서진 칼날");
+#include <boost/log/sources/logger.hpp>
+
 
 
 // 	DWORD dwPid = process_tool::GetPidFromExeName(L"wuxia_client.exe", NULL);
@@ -327,13 +159,6 @@ int _tmain(int argc, _TCHAR* argv[])
 // 	test.erase(test.begin() + 2);
 // 	std::cout << *pInt << std::endl;
 
-
-	//auto ret = ::DeleteUrlCacheEntry(L"http://192.168.0.214:8000");//ERROR_ACCESS_DENIED
-	//auto error = GetLastError();
-
-	DeleteUrlCache(TRUE, TRUE);
-	/*
-
 	wchar_t value[MAX_PATH] = { 0 };
 	wcscpy_s(value, L"vasfsfasdfsadfs");
 
@@ -341,23 +166,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	DWORD dwVal = 0;
 	LONG lnRes = RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Zds\\Hosp", 0, NULL, NULL, KEY_ALL_ACCESS, NULL, &hKey, &dwVal);
 	if (lnRes == ERROR_SUCCESS)
-=======
-	while (true)
->>>>>>> d8cc9fb66f0ae8682f04ee62fc18db8ae0aa3201
 	{
-		std::wcout << (GetAsyncKeyState(VK_DIVIDE) & 0x0001) << std::endl;
-		Sleep(200);
+
 	}
 		
 
 
 
 
-<<<<<<< HEAD
+
 	system("pause");
-	*/
-=======
->>>>>>> d8cc9fb66f0ae8682f04ee62fc18db8ae0aa3201
 	return 0;
 }
 

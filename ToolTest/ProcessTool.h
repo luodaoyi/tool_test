@@ -1,8 +1,10 @@
 #pragma once
 
-#include <TlHelp32.h>
+
 #include <functional>
 #include <vector>
+#include <windows.h>
+#include <TlHelp32.h>
 namespace process_tool
 { 
 	enum {error_process_exit_code = 100};
