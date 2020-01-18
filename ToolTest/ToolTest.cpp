@@ -134,14 +134,10 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	_setmode(_fileno(stdout), _O_U16TEXT);
 
-	while (true)
-	{
-		std::wcout << (GetAsyncKeyState(VK_DIVIDE) & 0x0001) << std::endl;
-		Sleep(200);
-	}
-		
-
-
+	CSimpleLog::GetInstance().SetLogMaxSize(1024 * 1024 * 1);
+	CSimpleLog::GetInstance().SetFile(L"test.log");
+	for (int i = 0; i < 100000000; i++)
+		CSimpleLog::GetInstance().Log(L"你好我好大家好");
 
 
 	return 0;

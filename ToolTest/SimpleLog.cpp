@@ -74,6 +74,14 @@ void CSimpleLog::WriteFile(LPCVOID  pData, size_t size)
 		return;
 	}
 	::WriteFile(m_file_handle, L"\r\n", 2 * 2, &writed, NULL);
+
+	LARGE_INTEGER file_size;
+	GetFileSizeEx(m_file_handle, &file_size);
+	if (file_size.QuadPart > m_max_log_size)
+	{
+		::CloseHandle(m_file_handle);
+		m_file_handle = INVALID_HANDLE_VALUE;
+	}
 }
 
 #define MAX_DEBUG_STRING 5120
@@ -144,7 +152,7 @@ bool CSimpleLog::OpenFile()
 		LARGE_INTEGER file_size;
 		file_size.QuadPart = 0;
 		GetFileSizeEx(m_file_handle, &file_size);
-		if (file_size.QuadPart > (1024 * 1024 * 10))
+		if (file_size.QuadPart > (m_max_log_size))
 		{
 			::CloseHandle(m_file_handle);
 			m_file_handle = INVALID_HANDLE_VALUE;
@@ -241,6 +249,16 @@ void CSimpleLog::SendPipe(const std::wstring & s)
 void CSimpleLog::SendUdp(const std::wstring & s)
 {
 	auto ret = sendto(udp_socket, (char*)s.c_str(), s.length() * sizeof(wchar_t), 0, (SOCKADDR *)& recv_addr, sizeof(recv_addr));
+	if (ret == SOCKET_ERROR) {
+		wchar_t error_buffer[256] = { 0 };
+		swprintf_s(error_buffer, L"udp sendto error ret == SOCKET_ERROR :lasterror:%d", ::WSAGetLastError());
+		WriteFile(error_buffer, (wcslen(error_buffer) + 1) * sizeof(wchar_t) );
+	}
+}
+
+void CSimpleLog::SetLogMaxSize(LONGLONG max_size)
+{
+	m_max_log_size = max_size;
 }
 
 

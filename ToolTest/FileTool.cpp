@@ -528,6 +528,44 @@ namespace file_tools
 		return TRUE;
 	}
 
+	DWORD64 GetFolderSize(const std::wstring & path)
+	{
+		DWORD64 ret_size = 0;
+
+		WIN32_FIND_DATAW ffd;
+		HANDLE hFind = INVALID_HANDLE_VALUE;
+		WCHAR szFindDir[MAX_PATH] = { 0 };
+		wcscpy_s(szFindDir, path.c_str());
+		wcscat_s(szFindDir, L"*.*");
+		hFind = FindFirstFile(szFindDir, &ffd);
+
+		if (INVALID_HANDLE_VALUE == hFind)
+		{
+			//::MessageBoxA(NULL,"hFind is INVALID_HANDLE_VALUE",NULL,MB_OK);
+			return FALSE;;
+		}
+
+		BOOL bRet = FALSE;
+		do
+		{
+			if (wcscmp(ffd.cFileName, L".") == 0 || wcscmp(ffd.cFileName, L"..") == 0)
+				continue;
+			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				//GetFileNameList(retFileNameList, strFolder + ffd.cFileName + L"\\", suffix);
+			}
+			else
+			{
+				DWORD64 file_size = ffd.nFileSizeHigh;
+				file_size <<= 32;
+				file_size += ffd.nFileSizeLow;
+				ret_size += file_size;
+				
+			}
+		} while (FindNextFile(hFind, &ffd) != 0);
+		FindClose(hFind);
+		return ret_size;
+	}
 
 	std::wstring GetTempFolder()
 	{
