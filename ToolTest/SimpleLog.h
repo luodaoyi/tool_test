@@ -34,6 +34,7 @@ public:
 	void SetPipe(int index,const std::wstring & host = L"." );
 	void SetFile(const std::wstring & file_name);
 	void SetUdp(int index, const std::string & ip);
+	void SetCmd(bool b);
 	std::wstring GetFileName() const;
 public:
 	class CRecordPump
@@ -68,6 +69,7 @@ private:
 	HANDLE m_file_handle = INVALID_HANDLE_VALUE;
 	HANDLE m_pipe = INVALID_HANDLE_VALUE;
 	bool m_pipe_switch = false;
+	bool m_is_cmd_output = false;
 	std::wstring m_pipe_name;
 	std::wstring m_file_name;
 	bool m_is_connected = false;

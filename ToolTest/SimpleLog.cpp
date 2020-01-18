@@ -51,6 +51,8 @@ void CSimpleLog::Log(const std::wstring & str)
 		SendPipe(GetPipeLineHead() + str);
 	if (m_udp_switch)
 		SendUdp(GetPipeLineHead() + str);
+	if (m_is_cmd_output)
+		std::wcout << GetPipeLineHead() + str << std::endl;
 }
 
 void CSimpleLog::WriteFile(LPCVOID  pData, size_t size)
@@ -124,6 +126,11 @@ void CSimpleLog::SetUdp(int index, const std::string & ip)
 	recv_addr.sin_port = htons(10120+index);
 
 	inet_pton(AF_INET, ip.c_str(), &recv_addr.sin_addr.s_addr);
+}
+
+void CSimpleLog::SetCmd(bool b)
+{
+	m_is_cmd_output = b;
 }
 bool CSimpleLog::OpenFile()
 {
