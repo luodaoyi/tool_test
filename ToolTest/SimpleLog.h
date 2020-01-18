@@ -36,6 +36,7 @@ public:
 	void SetUdp(int index, const std::string & ip);
 	void SetCmd(bool b);
 	std::wstring GetFileName() const;
+	void SetLogMaxSize(LONGLONG max_size);
 public:
 	class CRecordPump
 	{
@@ -82,10 +83,12 @@ private:
 
 	CSimpleLog(const CSimpleLog &) = delete;
 	void operator ==(const CSimpleLog &) = delete;
+	LONGLONG m_max_log_size = 1024 * 1024 * 2;
+
 };
 CSimpleLog::CRecordPump MakeRecordPump(CSimpleLog & log, CSimpleLog::severity_level l);
 
-#define SIMPLE_LOG(log)  MakeRecordPump(log).GetStream()
+#define SIMPLE_LOG(log)  MakeRecordPump(log,CSimpleLog::error).GetStream()
 #define SIMPLE_LOG_LEVEL(log,l)  MakeRecordPump(log,CSimpleLog::l).GetStream()
 #define SIMPLE_LOG_MEMBER(l) MakeRecordPump(m_log,CSimpleLog::l).GetStream()
 #define GLOG(l) MakeRecordPump(CSimpleLog::GetInstance(),CSimpleLog::l).GetStream()

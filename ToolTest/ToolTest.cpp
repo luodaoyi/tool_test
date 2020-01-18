@@ -135,6 +135,16 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
+<<<<<<< HEAD
+int _tmain(int argc, _TCHAR* argv[])
+{
+	_setmode(_fileno(stdout), _O_U16TEXT);
+
+	CSimpleLog::GetInstance().SetLogMaxSize(1024 * 1024 * 1);
+	CSimpleLog::GetInstance().SetFile(L"test.log");
+	for (int i = 0; i < 100000000; i++)
+		CSimpleLog::GetInstance().Log(L"你好我好大家好");
+=======
 // 	DWORD dwPid = process_tool::GetPidFromExeName(L"wuxia_client.exe", NULL);
 // 	HANDLE hProcess = ::OpenProcess(PROCESS_VM_OPERATION, FALSE, dwPid);
 // 	process_tool::mem_inject::MemLoadLibraryA(R"(E:\code\InjectDll\Debug\InjectDllLib.dll)", hProcess);
@@ -172,6 +182,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		
 
 
+>>>>>>> 7634af0e2dee6161b35a916e3cebfaef68535448
 
 
 
