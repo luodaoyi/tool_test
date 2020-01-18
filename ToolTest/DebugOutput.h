@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include <Windows.h>
 
 void SetDbgOutput(bool b);
 void OutputDebugStr(const wchar_t * buffer, ...);

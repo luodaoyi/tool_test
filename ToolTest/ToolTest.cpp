@@ -120,9 +120,14 @@ struct Test
 
 
 #include "TimeTool.h"
+int _tmain(int argc, _TCHAR* argv[])
+{
 
-#include <io.h>
-#include <fcntl.h>
+// 	std::string temp = "zhangdongsheng";
+// 
+// 	std::vector<char> data;
+// 	data.resize(temp.length());
+// 	memset(data.data(), 1, data.size());
 
 
 
@@ -130,6 +135,7 @@ struct Test
 
 
 
+<<<<<<< HEAD
 int _tmain(int argc, _TCHAR* argv[])
 {
 	_setmode(_fileno(stdout), _O_U16TEXT);
@@ -138,8 +144,49 @@ int _tmain(int argc, _TCHAR* argv[])
 	CSimpleLog::GetInstance().SetFile(L"test.log");
 	for (int i = 0; i < 100000000; i++)
 		CSimpleLog::GetInstance().Log(L"你好我好大家好");
+=======
+// 	DWORD dwPid = process_tool::GetPidFromExeName(L"wuxia_client.exe", NULL);
+// 	HANDLE hProcess = ::OpenProcess(PROCESS_VM_OPERATION, FALSE, dwPid);
+// 	process_tool::mem_inject::MemLoadLibraryA(R"(E:\code\InjectDll\Debug\InjectDllLib.dll)", hProcess);
 
 
+// 	std::list<int> vlist = { 0, 1, 2, 3, 4, 5 };
+// 
+// 	auto iter_beg = vlist.begin();
+// 	std::cout << *iter_beg << std::endl;
+// 
+// 	auto iter_n = std::next(iter_beg);
+// 	std::cout << *iter_n << std::endl;
+// 	std::cout << *iter_beg << std::endl;
+// 	
+// 	std::deque<int> test = { 0, 1, 2, 3, 4, 5 };
+// 
+// 	int * pInt = &test[3];
+// 
+// 	std::cout << *pInt << std::endl;
+// 	test.erase(test.begin() + 2);
+// 	std::cout << *pInt << std::endl;
+// 	test.erase(test.begin() + 2);
+// 	std::cout << *pInt << std::endl;
+
+	wchar_t value[MAX_PATH] = { 0 };
+	wcscpy_s(value, L"vasfsfasdfsadfs");
+
+	HKEY hKey = NULL;
+	DWORD dwVal = 0;
+	LONG lnRes = RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Zds\\Hosp", 0, NULL, NULL, KEY_ALL_ACCESS, NULL, &hKey, &dwVal);
+	if (lnRes == ERROR_SUCCESS)
+	{
+
+	}
+		
+
+
+>>>>>>> 7634af0e2dee6161b35a916e3cebfaef68535448
+
+
+
+	system("pause");
 	return 0;
 }
 
