@@ -19,8 +19,9 @@ public:
 public:
 	enum severity_level
 	{
-		notice, //一般输出
+		notice,//一般输出
 		error, //错误
+		debug, //调试时启用
 	};
 public:
 	static CSimpleLog & GetInstance()
@@ -29,8 +30,8 @@ public:
 		return log;
 	}
 public:
-	void Log(const  std::wstring & str);
-	void LogFmt(const wchar_t * buffer, ...);
+	void Log(const  std::wstring & str,severity_level level = notice);
+	void LogFmt(const wchar_t * buffer, severity_level level = notice, ...);
 	void SetPipe(int index,const std::wstring & host = L"." );
 	void SetFile(const std::wstring & file_name);
 	void SetUdp(int index, const std::string & ip);
@@ -47,7 +48,13 @@ public:
 		}
 		~CRecordPump()
 		{
-			m_log.Log(ss.str());
+			if (m_level == severity_level::debug) {
+#ifdef _DEBUG
+				m_log.Log(ss.str());
+#endif
+			}
+			else
+				m_log.Log(ss.str());
 		}
 		std::wostringstream & GetStream() 
 		{
@@ -63,8 +70,8 @@ private:
 	bool OpenFile();
 	bool ConnectPipe();
 	void WriteFile(LPCVOID  pData, size_t size);
-	std::wstring GetFileLineHead();
-	std::wstring GetPipeLineHead();
+	std::wstring GetFileLineHead(severity_level level);
+	std::wstring GetPipeLineHead(severity_level level);
 private:
 	std::mutex m_mutex;
 	HANDLE m_file_handle = INVALID_HANDLE_VALUE;
@@ -84,11 +91,10 @@ private:
 	CSimpleLog(const CSimpleLog &) = delete;
 	void operator ==(const CSimpleLog &) = delete;
 	LONGLONG m_max_log_size = 1024 * 1024 * 2;
-
 };
 CSimpleLog::CRecordPump MakeRecordPump(CSimpleLog & log, CSimpleLog::severity_level l);
 
-#define SIMPLE_LOG(log)  MakeRecordPump(log,CSimpleLog::error).GetStream()
+#define SIMPLE_LOG(log)  MakeRecordPump(log,CSimpleLog::notice).GetStream()
 #define SIMPLE_LOG_LEVEL(log,l)  MakeRecordPump(log,CSimpleLog::l).GetStream()
 #define SIMPLE_LOG_MEMBER(l) MakeRecordPump(m_log,CSimpleLog::l).GetStream()
 #define GLOG(l) MakeRecordPump(CSimpleLog::GetInstance(),CSimpleLog::l).GetStream()

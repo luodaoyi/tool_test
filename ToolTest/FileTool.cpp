@@ -21,7 +21,7 @@
 
 #include <tchar.h>
 
-
+#include <ShlObj.h>
 
 
 namespace file_tools
@@ -576,6 +576,7 @@ namespace file_tools
 			ret_path += L'\\';
 		return ret_path;
 	}
+
 }
 
 

@@ -6,7 +6,7 @@
 #include <locale>
 #include <codecvt>
 #include <wincrypt.h>
-#include "DebugOutput.h"
+//#include "DebugOutput.h"
 #include <memory>
 #include <algorithm>
 #include <cctype>
@@ -315,7 +315,7 @@ namespace string_tool
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
 			//LOG_CF(CLog::em_Log_Type::em_Log_Type_Exception, L"wstrcpy_my发生了异常");
-			OutputDebugStr(L"!!!wstrcpy_my异常");
+			//OutputDebugStr(L"!!!wstrcpy_my异常");
 		}
 		return pDest;
 	}
@@ -331,7 +331,7 @@ namespace string_tool
 		}
 		catch (...)
 		{
-			OutputDebugStr(L"!!!wstrcpy_my异常");
+			//OutputDebugStr(L"!!!wstrcpy_my异常");
 		}
 		return p;
 	}

@@ -5,7 +5,6 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 #include "SimpleLog.h"
-#include "DebugOutput.h"
 #include <ctime>
 #include  <iostream>
 #include <iomanip>
@@ -24,7 +23,7 @@ CSimpleLog::~CSimpleLog()
 	m_pipe_switch = false;
 }
 
-std::wstring CSimpleLog::GetFileLineHead()
+std::wstring CSimpleLog::GetFileLineHead(CSimpleLog::severity_level level)
 {
 	tm tm = { 0 };
 	auto t = time(NULL);
@@ -33,7 +32,7 @@ std::wstring CSimpleLog::GetFileLineHead()
 	oss << std::put_time(&tm, L"%F %X");
 	return std::wstring(L"[") + oss.str() + L"][" + std::to_wstring(::GetCurrentThreadId()) + L"]:";
 }
-std::wstring CSimpleLog::GetPipeLineHead()
+std::wstring CSimpleLog::GetPipeLineHead(CSimpleLog::severity_level level)
 {
 	auto t = std::time(nullptr);
 	tm cur_tm;
@@ -42,17 +41,17 @@ std::wstring CSimpleLog::GetPipeLineHead()
 	oss << std::put_time(&cur_tm, L"%X");
 	return L"[" + oss.str() + L"]";
 }
-void CSimpleLog::Log(const std::wstring & str)
+void CSimpleLog::Log(const std::wstring & str,CSimpleLog::severity_level level)
 {
-	std::wstring dest_str = GetFileLineHead() +  str;
+	std::wstring dest_str = GetFileLineHead(level) +  str;
 	std::lock_guard<std::mutex> l(m_mutex);
 	WriteFile(dest_str.c_str(), dest_str.length() * sizeof(wchar_t));
 	if (m_pipe_switch)
-		SendPipe(GetPipeLineHead() + str);
+		SendPipe(GetPipeLineHead(level) + str);
 	if (m_udp_switch)
-		SendUdp(GetPipeLineHead() + str);
+		SendUdp(GetPipeLineHead(level) + str);
 	if (m_is_cmd_output)
-		std::wcout << GetPipeLineHead() + str << std::endl;
+		std::wcout << GetPipeLineHead(level) + str << std::endl;
 }
 
 void CSimpleLog::WriteFile(LPCVOID  pData, size_t size)
@@ -61,7 +60,7 @@ void CSimpleLog::WriteFile(LPCVOID  pData, size_t size)
 	{
 		if (!OpenFile())
 		{
-			OutputDebugStr(L"Open File Failed");
+			//OutputDebugStr(L"Open File Failed");
 			return;
 		}
 	}
@@ -70,24 +69,26 @@ void CSimpleLog::WriteFile(LPCVOID  pData, size_t size)
 	if (!::WriteFile(m_file_handle, pData, size, &writed, NULL))
 	{
 		DWORD error = ::GetLastError();
-		OutputDebugStr(L"WriteFile Failed:%d", error);
+		//OutputDebugStr(L"WriteFile Failed:%d", error);
 		::CloseHandle(m_file_handle);
 		m_file_handle = INVALID_HANDLE_VALUE;
 		return;
 	}
 	::WriteFile(m_file_handle, L"\r\n", 2 * 2, &writed, NULL);
 
-	LARGE_INTEGER file_size;
-	GetFileSizeEx(m_file_handle, &file_size);
-	if (file_size.QuadPart > m_max_log_size)
-	{
-		::CloseHandle(m_file_handle);
-		m_file_handle = INVALID_HANDLE_VALUE;
+	if (time(NULL) % 10 == 0){
+		LARGE_INTEGER file_size;
+		GetFileSizeEx(m_file_handle, &file_size);
+		if (file_size.QuadPart > m_max_log_size)
+		{
+			::CloseHandle(m_file_handle);
+			m_file_handle = INVALID_HANDLE_VALUE;
+		}
 	}
 }
 
 #define MAX_DEBUG_STRING 5120
-void CSimpleLog::LogFmt(const wchar_t * buffer,...)
+void CSimpleLog::LogFmt(const wchar_t * buffer, severity_level level ,...)
 {
 	WCHAR temp[MAX_DEBUG_STRING] = { 0 };
 	va_list pArgList;
@@ -95,7 +96,7 @@ void CSimpleLog::LogFmt(const wchar_t * buffer,...)
 	vswprintf_s(temp, MAX_DEBUG_STRING,buffer, pArgList);
 	va_end(pArgList);
 
-	Log(temp);
+	Log(temp, level);
 }
 
 void CSimpleLog::SetFile(const std::wstring & file_name)
@@ -215,7 +216,7 @@ bool CSimpleLog::ConnectPipe()
 		DWORD dwMode = PIPE_READMODE_MESSAGE;
 		if (!SetNamedPipeHandleState(m_pipe, &dwMode, NULL, NULL))
 		{
-			OutputDebugStr(L"SetNamedPipeHandleState failed!");
+			//OutputDebugStr(L"SetNamedPipeHandleState failed!");
 			::CloseHandle(m_pipe);
 			m_pipe = INVALID_HANDLE_VALUE;
 			m_is_connected = false;
@@ -226,8 +227,9 @@ bool CSimpleLog::ConnectPipe()
 	else
 	{
 		auto last_error = ::GetLastError();
-		if (last_error == ERROR_PIPE_BUSY)
-			OutputDebugStr(L"ERROR_PIPE_BUSY  busy!");
+		if (last_error == ERROR_PIPE_BUSY) {
+			//OutputDebugStr(L"ERROR_PIPE_BUSY  busy!");
+		}
 		m_is_connected = false;
 	}
 

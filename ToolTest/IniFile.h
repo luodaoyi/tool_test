@@ -13,11 +13,11 @@ public:
 
 	void SetFileName(const std::wstring & file_name);
 
-	std::wstring GetIniStr(const std::wstring & key,const std::wstring & section,const std::wstring & default_value = L"");
-	void WriteIniStr(const std::wstring & key, const std::wstring & value,const std::wstring & section);
+	std::wstring GetIniStr(const std::wstring & key,const std::wstring & section = L"…Ë÷√",const std::wstring & default_value = L"");
+	void WriteIniStr(const std::wstring & key, const std::wstring & value,const std::wstring & section = L"…Ë÷√");
 
 	int GetIniInt(const std::wstring & key, const std::wstring & section,int default_value = 0 );
-	void WriteIniInt(const std::wstring & key, const int value, const std::wstring & section);
+	void WriteIniInt(const std::wstring & key, const int value, const std::wstring & section = L"…Ë÷√");
 private:
 	std::wstring m_file_path_name;
 	const bool m_rewrite_value;
