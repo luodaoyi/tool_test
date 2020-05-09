@@ -21,7 +21,7 @@ namespace string_tool
 	string WideToChar(const std::wstring & s);
 
 	template<typename T = std::wstring>
-	std::vector<T> SplitStrByFlag(const T & str, const T& strFlag)
+	std::vector<T> SplitStrByFlag(const T & str, const T& sep)
 	{
 		std::vector<T> vec;
 		size_t sep_size = sep.size();
