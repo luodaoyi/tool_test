@@ -83,7 +83,18 @@ namespace file_tools
 		fclose(pFile);
 		return TRUE;
 	}
-
+	BOOL CreateNormalFile(const std::wstring & cwsPath)
+	{
+		FILE* pFile = nullptr;
+		_wfopen_s(&pFile, cwsPath.c_str(), L"a");
+		if (pFile == NULL)
+		{
+			OutputDebugStr(L"创建文件:%s 失败!", cwsPath.c_str());
+			return FALSE;
+		}
+		fclose(pFile);
+		return TRUE;
+	}
 
 	BOOL WriteUnicodeFile(const std::wstring & wsPath, const std::wstring & wsContent)
 	{
@@ -302,6 +313,14 @@ namespace file_tools
 		DWORD read_types = 0;
 		BOOL bret_ret = ::ReadFile(file_handle, content.data(), file_size.LowPart, &read_types, NULL);
 		return (bret_ret && read_types == file_size.LowPart);
+	}
+
+	std::string ReadFileToString(const std::wstring & file_name)
+	{
+		std::vector<char> content;
+		ReadFile(file_name, content);
+		std::string ret(content.begin(), content.end());
+		return ret;
 	}
 	
 

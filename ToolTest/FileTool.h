@@ -20,6 +20,7 @@ namespace file_tools
 	BOOL WriteUnicodeFile(const std::wstring & file_name, const std::wstring & wsContent);
 	BOOL  AppendUnicodeFile(_In_ CONST std::wstring& cwsPath, _In_ CONST std::wstring& cwsContent);
 	BOOL ReadFile(const std::wstring & file_name, std::vector<char>  &content);
+	std::string ReadFileToString(const std::wstring & file_name);
 	BOOL FileExist(const std::wstring & file_name);
 	BOOL WriteFile(const std::wstring & file_namme, const char * buffer, size_t size,DWORD open_flag = CREATE_ALWAYS);
 	BOOL CreateUnicodeTextFile(_In_ CONST std::wstring& cwsPath);
@@ -32,6 +33,7 @@ namespace file_tools
 	BOOL GetFileNameListNoPath(std::vector<std::wstring> & retFileNameList, const std::wstring & strFolder, const std::wstring & suffix);
 	std::wstring GetTempFolder();
 	DWORD64 GetFolderSize(const std::wstring & path);
+	BOOL CreateNormalFile(const std::wstring & file_name);
 }
 
 

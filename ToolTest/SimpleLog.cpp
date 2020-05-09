@@ -92,7 +92,7 @@ void CSimpleLog::LogFmt(const wchar_t * buffer, severity_level level ,...)
 {
 	WCHAR temp[MAX_DEBUG_STRING] = { 0 };
 	va_list pArgList;
-	va_start(pArgList, buffer);
+	va_start(pArgList, level);
 	vswprintf_s(temp, MAX_DEBUG_STRING,buffer, pArgList);
 	va_end(pArgList);
 
