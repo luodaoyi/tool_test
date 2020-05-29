@@ -275,3 +275,13 @@ CSimpleLog::CRecordPump MakeRecordPump(CSimpleLog & log, CSimpleLog::severity_le
 {
 	return CSimpleLog::CRecordPump(log,l);
 }
+
+void CSimpleLog::Close()
+{
+	if (m_file_handle != INVALID_HANDLE_VALUE)
+		CloseHandle(m_file_handle);
+
+	m_pipe_switch = false;
+	m_is_cmd_output = false;
+	m_udp_switch = false;
+}

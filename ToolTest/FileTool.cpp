@@ -12,7 +12,6 @@
 #include <locale>
 #include <codecvt>
 #include <memory>
-#include "DebugOutput.h"
 #include <mutex>
 #include <algorithm>
 
@@ -72,10 +71,7 @@ namespace file_tools
 		FILE* pFile = nullptr;
 		_wfopen_s(&pFile, cwsPath.c_str(), L"a");
 		if (pFile == NULL)
-		{
-			OutputDebugStr( L"创建文件:%s 失败!", cwsPath.c_str());
 			return FALSE;
-		}
 
 		fseek(pFile, 0, SEEK_SET);
 		WCHAR wszFlag = 0xFEFF;
@@ -88,10 +84,7 @@ namespace file_tools
 		FILE* pFile = nullptr;
 		_wfopen_s(&pFile, cwsPath.c_str(), L"a");
 		if (pFile == NULL)
-		{
-			OutputDebugStr(L"创建文件:%s 失败!", cwsPath.c_str());
 			return FALSE;
-		}
 		fclose(pFile);
 		return TRUE;
 	}
@@ -106,10 +99,7 @@ namespace file_tools
 		FILE* pFile = nullptr;
 		_wfopen_s(&pFile, wsPath.c_str(), L"wb+");
 		if (pFile == nullptr)
-		{
-			OutputDebugStr( L"ReadScriptFile Fiald! Path:%s", wsPath.c_str());
 			return FALSE;
-		}
 
 		std::shared_ptr<WCHAR> pwstrBuffer(new WCHAR[wsContent.length() + 1], [](WCHAR* p){delete[] p; });
 		pwstrBuffer.get()[0] = 0xFEFF;
@@ -244,11 +234,8 @@ namespace file_tools
 		FILE* pFile = nullptr;
 		_wfopen_s(&pFile, wsPath.c_str(), L"rb");
 		if (pFile == nullptr)
-		{
-			//LOG_CF(CLog::em_Log_Type::em_Log_Type_Exception, L"ReadScriptFile Fiald! Path:%s", wsPath.c_str());
-			OutputDebugStr(L"ReadScriptFile Fiald! Path:%s", wsPath.c_str());
 			return FALSE;
-		}
+
 
 		fseek(pFile, 0, SEEK_END);
 		LONG lLen = ftell(pFile);
@@ -258,7 +245,6 @@ namespace file_tools
 		if (pwstrBuffer == nullptr)
 		{
 			fclose(pFile);
-			OutputDebugStr(L"Alloc Memory Fiald!");
 			return FALSE;
 		}
 
@@ -283,10 +269,7 @@ namespace file_tools
 		FILE* pFile = nullptr;
 		_wfopen_s(&pFile, cwsPath.c_str(), L"ab+");
 		if (pFile == nullptr)
-		{
-			OutputDebugStr(L"AppendUnicodeFile Fiald! Path:%s", cwsPath.c_str());
 			return FALSE;
-		}
 
 		fseek(pFile, 0, SEEK_END);
 
@@ -345,10 +328,7 @@ namespace file_tools
 		FILE* pFile = nullptr;
 		_wfopen_s(&pFile, cwsPath.c_str(), L"rb");
 		if (pFile == nullptr)
-		{
-			OutputDebugStr(L"ReadScriptFile Fiald! Path:%s", cwsPath.c_str());
 			return FALSE;
-		}
 
 		fseek(pFile, 0, SEEK_END);
 		LONG lLen = ftell(pFile);
@@ -378,7 +358,6 @@ namespace file_tools
 		if (INVALID_HANDLE_VALUE == hFile)
 		{
 			DWORD dwStatus = GetLastError();
-			OutputDebugStr(L"CalcFileMd5 CreateFile :%s Failed", szFileName);
 			return ret_md5;
 		}
 
@@ -393,7 +372,6 @@ namespace file_tools
 			CRYPT_VERIFYCONTEXT))
 		{
 			DWORD dwStatus = GetLastError();
-			OutputDebugStr(L"CalcFileMd5 CryptAcquireContext failed: %d", dwStatus);
 			CloseHandle(hFile);
 			return ret_md5;
 		}
@@ -403,7 +381,6 @@ namespace file_tools
 		if (!CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash))
 		{
 			DWORD dwStatus = GetLastError();
-			OutputDebugStr( L"CryptAcquireContext failed: %d", dwStatus);
 			return ret_md5;
 		}
 		SetResDeleter(hHash, [](HCRYPTHASH &h){CryptDestroyHash(h); });
@@ -417,14 +394,12 @@ namespace file_tools
 			if (!CryptHashData(hHash, rgbFile, cbRead, 0))
 			{
 				DWORD dwStatus = GetLastError();
-				OutputDebugStr(L"CryptHashData failed : %d", dwStatus);
 			}
 		}
 
 		if (!bResult)
 		{
 			DWORD dwStatus = GetLastError();
-			OutputDebugStr(L"ReadFile failed: %d", dwStatus);
 			return ret_md5;
 		}
 
@@ -445,7 +420,6 @@ namespace file_tools
 		else
 		{
 			DWORD dwStatus = GetLastError();
-			OutputDebugStr(L"CryptGetHashParam failed: %d", dwStatus);
 			return ret_md5;
 		}
 		return ret_md5;
@@ -596,8 +570,19 @@ namespace file_tools
 		return ret_path;
 	}
 
+	std::wstring GetTmpFileName()
+	{
+		wchar_t tmp_path[MAX_PATH] = { 0 };
+		GetTempPath(MAX_PATH, tmp_path);
+
+		wchar_t buffer[MAX_PATH] = { 0 };
+		if (GetTempFileName(tmp_path, // directory for tmp files
+			TEXT("Ck"),     // temp file name prefix 
+			0,                // create unique name 
+			buffer) == 0)  // buffer for name 
+			return L"";
+		return buffer;
+	}
+
 }
-
-
-
 

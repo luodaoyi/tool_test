@@ -89,3 +89,10 @@ float CCmdParse::GetFloatVal(const std::wstring & key, float default_val)
 {
 	return std::stof(GetStrVal(key, std::to_wstring(default_val)));
 }
+std::wstring CCmdParse::GetOption(int index)
+{
+	if (m_cmd_list.size() >= (index + 1))
+		return m_cmd_list.at(index);
+	else
+		return L"";
+}

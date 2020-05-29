@@ -38,6 +38,7 @@ public:
 	void SetCmd(bool b);
 	std::wstring GetFileName() const;
 	void SetLogMaxSize(LONGLONG max_size);
+	void Close();
 public:
 	class CRecordPump
 	{
@@ -78,13 +79,14 @@ private:
 	HANDLE m_pipe = INVALID_HANDLE_VALUE;
 	bool m_pipe_switch = false;
 	bool m_is_cmd_output = false;
+	bool m_udp_switch = false;
 	std::wstring m_pipe_name;
 	std::wstring m_file_name;
 	bool m_is_connected = false;
 
 	sockaddr_in recv_addr = { 0 };
 
-	bool m_udp_switch = false;
+
 	typedef UINT_PTR        SOCKET;
 	SOCKET udp_socket;
 

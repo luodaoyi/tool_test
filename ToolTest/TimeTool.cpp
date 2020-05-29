@@ -66,6 +66,12 @@ namespace time_tool
 			return ret_time;
 	}
 
+	std::wstring TmToString(const tm tm_data)
+	{
+		std::wostringstream oss;
+		oss << std::put_time(&tm_data, L"%F %X");
+		return oss.str();
+	}
 	std::wstring TimeToString(const time_t time)
 	{
 		tm tm = { 0 };

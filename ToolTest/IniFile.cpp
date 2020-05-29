@@ -6,7 +6,7 @@
 #include "FileTool.h"
 #pragma comment(lib,"Shlwapi.lib")
 
-#include "DebugOutput.h"
+
 
 
 CIniFile::CIniFile() : m_rewrite_value(true)
@@ -17,10 +17,7 @@ CIniFile::CIniFile() : m_rewrite_value(true)
 void CIniFile::SetFileName(const std::wstring & file_name)
 {
 	if (file_name.empty())
-	{
-		OutputDebugStr(L"!!!file_name is empty");
-		return;
-	}
+		throw std::invalid_argument("file_name is empty");
 	if (file_tools::IsValidFilePath(file_name))
 	{
 		//如果是带目录的文件路径 则先创建目录

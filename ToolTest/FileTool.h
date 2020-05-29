@@ -4,6 +4,7 @@
 
 
 #include <vector>
+#include <string>
 #include <Windows.h>
 
 namespace file_tools
@@ -34,6 +35,7 @@ namespace file_tools
 	std::wstring GetTempFolder();
 	DWORD64 GetFolderSize(const std::wstring & path);
 	BOOL CreateNormalFile(const std::wstring & file_name);
+	std::wstring GetTmpFileName();
 }
 
 

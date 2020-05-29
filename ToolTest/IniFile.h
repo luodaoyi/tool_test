@@ -16,7 +16,7 @@ public:
 	std::wstring GetIniStr(const std::wstring & key,const std::wstring & section = L"设置",const std::wstring & default_value = L"");
 	void WriteIniStr(const std::wstring & key, const std::wstring & value,const std::wstring & section = L"设置");
 
-	int GetIniInt(const std::wstring & key, const std::wstring & section,int default_value = 0 );
+	int GetIniInt(const std::wstring & key, const std::wstring & section = L"设置",int default_value = 0 );
 	void WriteIniInt(const std::wstring & key, const int value, const std::wstring & section = L"设置");
 private:
 	std::wstring m_file_path_name;
