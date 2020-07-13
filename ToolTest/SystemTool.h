@@ -1,7 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <functional>
-
+#include <string>
 namespace system_tool
 {
 	enum ACTION_RET

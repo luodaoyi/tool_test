@@ -11,7 +11,7 @@ public:
 	~CInlineHook();
 
 	bool Hook();
-	void UnHook();
+	bool UnHook();
 
 	DWORD GetHookAddr() const;
 

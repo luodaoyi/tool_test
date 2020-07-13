@@ -260,6 +260,8 @@ namespace file_tools
 
 	BOOL  AppendUnicodeFile(_In_ CONST std::wstring& cwsPath, _In_ CONST std::wstring& cwsContent)
 	{
+		if (cwsContent.empty())
+			return TRUE;
 		static std::mutex MutexAppendUnicodeFile;
 		std::lock_guard<std::mutex> lck(MutexAppendUnicodeFile);
 
@@ -482,7 +484,7 @@ namespace file_tools
 		if (pos != std::wstring::npos)
 		{
 			std::wstring type_str = file_name.substr(pos + 1);
-			std::transform(type_str.begin(), type_str.end(), type_str.begin(), tolower);
+			std::transform(type_str.begin(), type_str.end(), type_str.begin(), towlower);
 			return type_str;
 		}
 		return std::wstring();

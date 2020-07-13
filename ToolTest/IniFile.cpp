@@ -6,7 +6,7 @@
 #include "FileTool.h"
 #pragma comment(lib,"Shlwapi.lib")
 
-
+#include <stdexcept>
 
 
 CIniFile::CIniFile() : m_rewrite_value(true)

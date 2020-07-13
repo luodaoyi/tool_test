@@ -113,20 +113,23 @@ bool CInlineHook::Hook()
 }
 
 
-void CInlineHook::UnHook()
+bool CInlineHook::UnHook()
 {
 	if (m_SavedSrcCode == 0)
-		return;
+		return false;
 	DWORD old_protected = NULL;
-	::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, PAGE_EXECUTE_READWRITE, &old_protected);
-	WriteProcessMemory(GetCurrentProcess(),
+	if (!::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, PAGE_EXECUTE_READWRITE, &old_protected))
+		return false;
+	if (!WriteProcessMemory(GetCurrentProcess(),
 		(LPVOID)m_RealHookAddr,
 		m_SavedSrcCode,
 		m_SaveSrcCodeSize,
-		NULL);
+		NULL))
+		return false;
 	m_has_hook = false;
 	DWORD temp = 0;
 	::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, old_protected, &temp);
+	return true;
 }
 
 void CInlineHook::WriteHook()
