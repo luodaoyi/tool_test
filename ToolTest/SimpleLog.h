@@ -8,8 +8,10 @@
 #include <sstream>
 
 
-#include <WinSock2.h>
+//#include <WinSock2.h>
 #include <windows.h>
+
+struct sockaddr_in;
 
 class CSimpleLog
 {
@@ -31,6 +33,7 @@ public:
 	}
 public:
 	void Log(const  std::wstring & str,severity_level level = notice);
+	void LogOnlyFile(const  std::wstring& str, severity_level level = notice);
 	void LogFmt(const wchar_t * buffer, severity_level level = notice, ...);
 	void SetPipe(int index,const std::wstring & host = L"." );
 	void SetFile(const std::wstring & file_name);
@@ -84,7 +87,7 @@ private:
 	std::wstring m_file_name;
 	bool m_is_connected = false;
 
-	sockaddr_in recv_addr = { 0 };
+	std::unique_ptr< sockaddr_in> recv_addr;
 
 
 	typedef UINT_PTR        SOCKET;
@@ -92,7 +95,7 @@ private:
 
 	CSimpleLog(const CSimpleLog &) = delete;
 	void operator ==(const CSimpleLog &) = delete;
-	LONGLONG m_max_log_size = 1024 * 1024 * 2;
+	LONGLONG m_max_log_size = 1024 * 1024 * 60;
 };
 CSimpleLog::CRecordPump MakeRecordPump(CSimpleLog & log, CSimpleLog::severity_level l);
 

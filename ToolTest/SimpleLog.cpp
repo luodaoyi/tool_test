@@ -10,9 +10,11 @@
 #include <iomanip>
 #include <sstream>
 #include <ws2tcpip.h>
+
 CSimpleLog::CSimpleLog()
 {
 	m_file_handle = INVALID_HANDLE_VALUE;
+	recv_addr = std::make_unique<sockaddr_in>();
 }
 
 CSimpleLog::~CSimpleLog()
@@ -53,7 +55,12 @@ void CSimpleLog::Log(const std::wstring & str,CSimpleLog::severity_level level)
 	if (m_is_cmd_output)
 		std::wcout << GetPipeLineHead(level) + str << std::endl;
 }
-
+void CSimpleLog::LogOnlyFile(const  std::wstring& str, severity_level level )
+{
+	std::wstring dest_str = GetFileLineHead(level) + str;
+	std::lock_guard<std::mutex> l(m_mutex);
+	WriteFile(dest_str.c_str(), dest_str.length() * sizeof(wchar_t));
+}
 void CSimpleLog::WriteFile(LPCVOID  pData, size_t size)
 {
 	if (m_file_handle == INVALID_HANDLE_VALUE)
@@ -130,11 +137,11 @@ void CSimpleLog::SetUdp(int index, const std::string & ip)
 	}
 
 	udp_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	ZeroMemory(&recv_addr, sizeof(recv_addr));
-	recv_addr.sin_family = AF_INET;
-	recv_addr.sin_port = htons(10120+index);
+	ZeroMemory(recv_addr.get(), sizeof(sockaddr_in));
+	recv_addr->sin_family = AF_INET;
+	recv_addr->sin_port = htons(10120+index);
 
-	inet_pton(AF_INET, ip.c_str(), &recv_addr.sin_addr.s_addr);
+	inet_pton(AF_INET, ip.c_str(), &recv_addr->sin_addr.s_addr);
 }
 
 void CSimpleLog::SetCmd(bool b)
@@ -200,7 +207,7 @@ void CSimpleLog::SetPipe(int index,const std::wstring & host)
 bool CSimpleLog::ConnectPipe()
 {
 	static DWORD last_connect = 0;
-	if (GetTickCount() - last_connect > 10000)
+	if (last_connect == 0 || GetTickCount() - last_connect > 10000)
 		last_connect = GetTickCount();
 	else
 		return false;
@@ -257,7 +264,7 @@ void CSimpleLog::SendPipe(const std::wstring & s)
 }
 void CSimpleLog::SendUdp(const std::wstring & s)
 {
-	auto ret = sendto(udp_socket, (char*)s.c_str(), s.length() * sizeof(wchar_t), 0, (SOCKADDR *)& recv_addr, sizeof(recv_addr));
+	auto ret = sendto(udp_socket, (char*)s.c_str(), s.length() * sizeof(wchar_t), 0, (SOCKADDR *)recv_addr.get(), sizeof(sockaddr_in));
 	if (ret == SOCKET_ERROR) {
 		wchar_t error_buffer[256] = { 0 };
 		swprintf_s(error_buffer, L"udp sendto error ret == SOCKET_ERROR :lasterror:%d", ::WSAGetLastError());

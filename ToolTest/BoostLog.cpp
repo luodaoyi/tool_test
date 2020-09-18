@@ -276,7 +276,7 @@ namespace boost_log
 	}
 	void LogA(severity_level mode, const char * szBuff)
 	{
-		wstring temp = string_tool::CharToWide(szBuff);
+		std::wstring temp = string_tool::CharToWide(szBuff);
 		LogW(mode, temp.c_str());
 	}
 #define MAX_LOG_FMT_LEN 1024

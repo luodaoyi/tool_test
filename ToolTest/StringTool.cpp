@@ -41,7 +41,7 @@ namespace string_tool
 
 
 
-	wstring CharToWide(const char * szBuf)
+	std::wstring CharToWide(const char * szBuf)
 	{
 		auto nLenBytesRequire = ::MultiByteToWideChar(CP_ACP,
 			0,
@@ -61,7 +61,7 @@ namespace string_tool
 		return std::wstring(&buffer[0], new_size);
 	}
 
-	string WideToChar(const wchar_t * szWBuf)
+	std::string WideToChar(const wchar_t * szWBuf)
 	{
 		BOOL bOk = FALSE;
 		int nLen = ::WideCharToMultiByte(CP_ACP,
@@ -89,7 +89,7 @@ namespace string_tool
 	}
 
 
-	wstring CharToWide(const std::string & s)
+	std::wstring CharToWide(const std::string & s)
 	{
 		auto nLenBytesRequire = ::MultiByteToWideChar(CP_ACP,
 			0,
@@ -109,7 +109,7 @@ namespace string_tool
 		return std::wstring(&buffer[0], new_size);
 
 	}
-	string WideToChar(const std::wstring & s)
+	std::string WideToChar(const std::wstring & s)
 	{
 		BOOL bOk = FALSE;
 		int nLen = ::WideCharToMultiByte(CP_ACP,
@@ -366,7 +366,12 @@ namespace string_tool
 		std::transform(newstr.begin(), newstr.end(), newstr.begin(), tolower);
 		return newstr;
 	}
-
+	std::string str_uppper_case(const std::string& s)
+	{
+		std::string newstr(s);
+		std::transform(newstr.begin(), newstr.end(), newstr.begin(), toupper);
+		return newstr;
+	}
 	std::wstring strlower(const std::wstring &str)
 	{
 		std::wstring newstr(str);
@@ -391,4 +396,5 @@ namespace string_tool
 
 		return temp;
 	}
+
 }

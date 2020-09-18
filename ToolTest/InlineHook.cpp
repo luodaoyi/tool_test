@@ -118,7 +118,7 @@ bool CInlineHook::UnHook()
 	if (m_SavedSrcCode == 0)
 		return false;
 	DWORD old_protected = NULL;
-	if (!::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, PAGE_EXECUTE_READWRITE, &old_protected))
+	if (!(FnVirtualProtect_ ? FnVirtualProtect_((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, PAGE_EXECUTE_READWRITE, &old_protected) : ::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, PAGE_EXECUTE_READWRITE, &old_protected)))
 		return false;
 	if (!WriteProcessMemory(GetCurrentProcess(),
 		(LPVOID)m_RealHookAddr,
@@ -128,7 +128,7 @@ bool CInlineHook::UnHook()
 		return false;
 	m_has_hook = false;
 	DWORD temp = 0;
-	::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, old_protected, &temp);
+	FnVirtualProtect_ ? FnVirtualProtect_((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, old_protected, &temp) :(::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, old_protected, &temp));
 	return true;
 }
 
@@ -137,7 +137,7 @@ void CInlineHook::WriteHook()
 	///////////////下面正式进行HOOK
 
 	DWORD old_protected = NULL;
-	::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, PAGE_EXECUTE_READWRITE, &old_protected);
+	FnVirtualProtect_ ? FnVirtualProtect_((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, PAGE_EXECUTE_READWRITE, &old_protected) : (::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, PAGE_EXECUTE_READWRITE, &old_protected));
 
 
 	JMPCODE_ jmpCode2;
@@ -162,8 +162,7 @@ void CInlineHook::WriteHook()
 	}
 
 	DWORD temp = 0;
-	::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, old_protected, &temp);
-
+	FnVirtualProtect_ ? FnVirtualProtect_((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, old_protected, &temp) :  (::VirtualProtect((LPVOID)m_RealHookAddr, 5 + m_dwNopCount, old_protected, &temp));
 }
 
 DWORD CInlineHook::GetMyNakedFunctNopPos()
@@ -206,4 +205,11 @@ DWORD CInlineHook::GetJumpCostByte()
 DWORD CInlineHook::GetHookAddr() const
 {
 	return m_HookAddr;
+}
+void CInlineHook::SetVirtualProtectFunc(std::function<BOOL(LPVOID lpAddress,
+	SIZE_T dwSize,
+	DWORD  flNewProtect,
+	PDWORD lpflOldProtect)> fn)
+{
+	FnVirtualProtect_ = fn;
 }

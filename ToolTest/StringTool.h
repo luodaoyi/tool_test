@@ -1,12 +1,10 @@
 #pragma once
 
 #include <string>
-using std::wstring;
-using std::string;
 #include <vector>
 
 #include <stdio.h>
-#include <windows.h>
+
 
 using std::vector;
 
@@ -14,11 +12,11 @@ namespace string_tool
 {
 	template<typename T,typename T2>
 	T lexical_cast(const T2 & s);
-	wstring CharToWide(const char * szBuf);
-	string WideToChar(const wchar_t * szWBuf);
+	std::wstring CharToWide(const char * szBuf);
+	std::string WideToChar(const wchar_t * szWBuf);
 
-	wstring CharToWide(const std::string & s);
-	string WideToChar(const std::wstring & s);
+	std::wstring CharToWide(const std::string & s);
+	std::string WideToChar(const std::wstring & s);
 
 	template<typename T = std::wstring>
 	std::vector<T> SplitStrByFlag(const T & str, const T& sep)
@@ -63,10 +61,9 @@ namespace string_tool
 
 	std::string strlower(const std::string &str);
 	std::wstring strlower(const std::wstring &str);
+	std::string str_uppper_case(const std::string& s);
 
-	DWORD GetRand_For_DWORD();
 
 	std::wstring SprintfStr(const wchar_t * fmt, ...);
-
 }
 

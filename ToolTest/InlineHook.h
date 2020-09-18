@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include "NonCopyable.h"
+#include <functional>
 
 class CInlineHook : public CNonCopyable
 {
@@ -14,7 +15,10 @@ public:
 	bool UnHook();
 
 	DWORD GetHookAddr() const;
-
+	void SetVirtualProtectFunc(std::function<BOOL(LPVOID lpAddress,
+		SIZE_T dwSize,
+		DWORD  flNewProtect,
+		PDWORD lpflOldProtect)> fn);
 private:
 	DWORD m_RealHookAddr = 0;
 	DWORD m_RealMyFuncAddr = 0;
@@ -35,5 +39,10 @@ private:
 	bool m_has_hook = false;
 	bool m_hook_addr_is_call =false;
 	DWORD m_hook_addr_call_addr = 0;
+
+	std::function<BOOL(LPVOID lpAddress,
+		SIZE_T dwSize,
+		DWORD  flNewProtect,
+		PDWORD lpflOldProtect)> FnVirtualProtect_;
 };
 

@@ -25,14 +25,14 @@
 
 namespace file_tools
 {
-	std::vector<string> ReadAsciiFileLines(const std::wstring & file_name)
+	std::vector<std::string> ReadAsciiFileLines(const std::wstring & file_name)
 	{
 		std::ifstream in_file(file_name);
 		std::vector<std::string> ret_lines;
 		if (in_file.is_open())
 		{
-			char line_buffer[1024];
-			while (in_file.getline(line_buffer, 1024))
+			char line_buffer[10240];
+			while (in_file.getline(line_buffer, 10240))
 			{
 				ret_lines.push_back(line_buffer);
 			}
@@ -113,9 +113,9 @@ namespace file_tools
 
 	}
 
-	wstring GetPathByPathFile(const std::wstring & strPathFile)
+	std::wstring GetPathByPathFile(const std::wstring & strPathFile)
 	{
-		wstring strLocalFullPath = strPathFile;
+		std::wstring strLocalFullPath = strPathFile;
 		WCHAR szDir[256], szDrive[20], szName[256], szExt[60];
 		if (_wsplitpath_s(strLocalFullPath.c_str(),
 			szDrive, 20,
@@ -130,7 +130,7 @@ namespace file_tools
 
 	std::wstring GetFileByPathFile(const std::wstring & strPathFile)
 	{
-		wstring strLocalFullPath = strPathFile;
+		std::wstring strLocalFullPath = strPathFile;
 		WCHAR szDir[256], szDrive[20], szName[256], szExt[60];
 		if (_wsplitpath_s(strLocalFullPath.c_str(),
 			szDrive, 20,

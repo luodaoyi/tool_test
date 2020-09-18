@@ -20,3 +20,6 @@ namespace asm_tool
 	BOOL		WriteFloat(UINT_PTR dwAddr, float fValue);																				            //			Ð´ÈëÄÚ´æ
 	BOOL		WriteBYTE(UINT_PTR dwAddr, BYTE bValue);
 };
+
+#define RD(Addr) asm_tool::ReadDWORD(Addr)
+#define RB(Addr) asm_tool::ReadBYTE(Addr)

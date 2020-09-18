@@ -33,14 +33,14 @@ void DebugStr(const WCHAR * buffer, va_list pArgList)
 {
 	WCHAR temp[MAX_DEBUG_STRING] = { 0 };
 	vswprintf_s(temp, buffer, pArgList);
-	wstring debug_str = g_header + L"[" + std::to_wstring(GetCurrentThreadId()) + L"]" + temp + L"\n";
+	std::wstring debug_str = g_header + L"[" + std::to_wstring(GetCurrentThreadId()) + L"]" + temp + L"\n";
 	OutputDebugStringW(debug_str.c_str());
 }
 void DebugStrA(const char * buffer, va_list pArgList)
 {
 	char temp[MAX_DEBUG_STRING] = { 0 };
 	vsprintf_s(temp, buffer, pArgList);
-	string debug_str = g_headerA + "[" + std::to_string(GetCurrentThreadId()) + "]" + temp + "\n";
+	std::string debug_str = g_headerA + "[" + std::to_string(GetCurrentThreadId()) + "]" + temp + "\n";
 	OutputDebugStringA(debug_str.c_str());
 }
 VOID OutputDebugStr(const WCHAR * buffer, ...)

@@ -608,6 +608,7 @@ namespace process_tool
 			OutputDebugStr(L"FreeRemoteDll OpenProcess Failed! %d", ::GetLastError());
 			return FALSE;
 		}
+		SetResDeleter(hProcess, [](HANDLE& h) {CloseHandle(h); });
 
 		HANDLE hThread = ::CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE) ::GetProcAddress(GetModuleHandle(L"Kernel32"), "FreeLibrary"), (void*)hDll, 0, NULL);
 		if (hThread == NULL)
@@ -615,10 +616,10 @@ namespace process_tool
 			OutputDebugStr(L"FreeRemoteDll CreateRemoteThread Failed errorid:%d", ::GetLastError());
 			return FALSE;
 		}
+		SetResDeleter(hThread, [](HANDLE& h) {CloseHandle(h); });
 		::WaitForSingleObject(hThread, INFINITE);
 		DWORD dwRet = 0;
 		GetExitCodeThread(hThread, &dwRet);
-		::CloseHandle(hThread);
 		if (dwRet == 0)
 		{
 			OutputDebugStr(L"FreeRemoteDll FreeLibray Failed!");
@@ -937,7 +938,7 @@ namespace process_tool
 		}
 	}
 
-	uintptr_t FindRemoteDLL(DWORD pid, wstring libNameSrc)
+	uintptr_t FindRemoteDLL(DWORD pid, std::wstring libNameSrc)
 	{
 		HANDLE hModuleSnap = INVALID_HANDLE_VALUE;
 		std::wstring libName(libNameSrc);
