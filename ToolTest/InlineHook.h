@@ -15,10 +15,13 @@ public:
 	bool UnHook();
 
 	DWORD GetHookAddr() const;
-	void SetVirtualProtectFunc(std::function<BOOL(LPVOID lpAddress,
-		SIZE_T dwSize,
-		DWORD  flNewProtect,
-		PDWORD lpflOldProtect)> fn);
+	typedef BOOL(WINAPI
+		* FnVirtualProtect)(
+			LPVOID lpAddress,
+			SIZE_T dwSize,
+			DWORD  flNewProtect,
+			PDWORD lpflOldProtect);
+	void SetVirtualProtectFunc(FnVirtualProtect func);
 private:
 	DWORD m_RealHookAddr = 0;
 	DWORD m_RealMyFuncAddr = 0;
@@ -40,9 +43,7 @@ private:
 	bool m_hook_addr_is_call =false;
 	DWORD m_hook_addr_call_addr = 0;
 
-	std::function<BOOL(LPVOID lpAddress,
-		SIZE_T dwSize,
-		DWORD  flNewProtect,
-		PDWORD lpflOldProtect)> FnVirtualProtect_;
+
+	FnVirtualProtect FnVirtualProtect_ = NULL;
 };
 

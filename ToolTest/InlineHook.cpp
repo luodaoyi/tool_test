@@ -206,10 +206,7 @@ DWORD CInlineHook::GetHookAddr() const
 {
 	return m_HookAddr;
 }
-void CInlineHook::SetVirtualProtectFunc(std::function<BOOL(LPVOID lpAddress,
-	SIZE_T dwSize,
-	DWORD  flNewProtect,
-	PDWORD lpflOldProtect)> fn)
+void CInlineHook::SetVirtualProtectFunc(FnVirtualProtect func)
 {
-	FnVirtualProtect_ = fn;
+	FnVirtualProtect_ = func;
 }

@@ -5,6 +5,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 #include "SimpleLog.h"
+
 #include <ctime>
 #include  <iostream>
 #include <iomanip>
@@ -27,12 +28,16 @@ CSimpleLog::~CSimpleLog()
 
 std::wstring CSimpleLog::GetFileLineHead(CSimpleLog::severity_level level)
 {
-	tm tm = { 0 };
-	auto t = time(NULL);
-	localtime_s(&tm, &t);
-	std::wostringstream oss;
-	oss << std::put_time(&tm, L"%F %X");
-	return std::wstring(L"[") + oss.str() + L"][" + std::to_wstring(::GetCurrentThreadId()) + L"]:";
+	//tm tm = { 0 };
+	//auto t = time(NULL);
+	//localtime_s(&tm, &t);
+	//std::wostringstream oss;
+	//oss << std::put_time(&tm, L"%F %X");
+	SYSTEMTIME sys_tm;
+	::GetLocalTime(&sys_tm);
+	wchar_t buffer[30];
+	swprintf_s(buffer, L"%4d-%02d-%02d %02d:%02d:%02d %03d", sys_tm.wYear, sys_tm.wMonth, sys_tm.wDay, sys_tm.wHour, sys_tm.wMinute, sys_tm.wSecond, sys_tm.wMilliseconds);
+	return std::wstring(L"[") + buffer   + L"][" + std::to_wstring(::GetCurrentThreadId()) + L"]:";
 }
 std::wstring CSimpleLog::GetPipeLineHead(CSimpleLog::severity_level level)
 {
