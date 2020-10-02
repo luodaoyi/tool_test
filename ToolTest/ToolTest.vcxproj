@@ -22,7 +22,7 @@
     <ProjectGuid>{EC861929-2BF5-4C22-AA71-408D3C6736F3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ToolTest</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -154,6 +154,7 @@
     <ClInclude Include="AlgorithmTool.h" />
     <ClInclude Include="AsmTool.h" />
     <ClInclude Include="BoostLog.h" />
+    <ClInclude Include="CInlineHookEx.h" />
     <ClInclude Include="ClassInstance.h" />
     <ClInclude Include="CLSearchBase.h" />
     <ClInclude Include="CmdParse.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="InlineHook.h" />
     <ClInclude Include="KeySimulation.h" />
     <ClInclude Include="Language.h" />
+    <ClInclude Include="NakedHook.h" />
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="PipeClient.h" />
     <ClInclude Include="PipeServer.h" />
@@ -181,11 +183,13 @@
     <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="SimpleLog.h" />
     <ClInclude Include="Verification.h" />
+    <ClInclude Include="ZHook.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmTool.cpp" />
     <ClCompile Include="AsmTool.cpp" />
     <ClCompile Include="BoostLog.cpp" />
+    <ClCompile Include="CInlineHookEx.cpp" />
     <ClCompile Include="CLSearchBase.cpp" />
     <ClCompile Include="CmdParse.cpp" />
     <ClCompile Include="DebugOutput.cpp" />
@@ -194,6 +198,7 @@
     <ClCompile Include="InlineHook.cpp" />
     <ClCompile Include="KeySimulation.cpp" />
     <ClCompile Include="Language.cpp" />
+    <ClCompile Include="NakedHook.cpp" />
     <ClCompile Include="PipeClient.cpp" />
     <ClCompile Include="PipeServer.cpp" />
     <ClCompile Include="ProcessTool.cpp" />
@@ -215,6 +220,7 @@
     <ClCompile Include="HandleMy.cpp" />
     <ClCompile Include="SimpleLog.cpp" />
     <ClCompile Include="Verification.cpp" />
+    <ClCompile Include="ZHook.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

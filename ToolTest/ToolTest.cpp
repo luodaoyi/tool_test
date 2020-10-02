@@ -31,60 +31,6 @@ using namespace std;
 #include "Language.h"
 #include <functional>
 #include "verification.h"
-void MyMessageBox(const char * szBuff)
-{
-	if (szBuff)
-		std::cout << "MessageBox内容:" <<szBuff<< std::endl;
-}
-
-_declspec(naked) void nakedPrivateChat()
-{
-	__asm
-	{
-		pushad  //保存寄存器
-
-			mov ebp, esp  //这是固定的
-			add ebp, 0x20   //这也是固定的 处理pushad的堆栈
-
-			mov eax, [ebp + 0x8]
-			push eax
-			call MyMessageBox
-			add esp, 4
-
-
-
-			popad //保存寄存器取消
-
-
-			/*
-			下面要nop HOOK库会将下面的nop改成相应的代码
-			*/
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-			nop
-	}
-}
 
 #include <set>
 
@@ -125,20 +71,62 @@ struct Test
 #include <fcntl.h>
 
 
+
+#define THROW_SYSTEM_ERROR(X) { DWORD dwErrVal = GetLastError();\
+ std::error_code ec(dwErrVal, std::system_category()); \
+ throw std::system_error(ec, X); }
+
+
+
+decltype(&::MessageBoxA) fpMessageBoxA = NULL;
+int WINAPI MyMessageBoxA(
+	_In_opt_ HWND hWnd,
+	_In_opt_ LPCSTR lpText,
+	_In_opt_ LPCSTR lpCaption,
+	_In_ UINT uType)
+{
+	fpMessageBoxA(NULL, "dddddddd", NULL, MB_OK);
+	return 0;
+}
+
+_declspec(naked) void nakedFunc()
+{
+	__asm {
+		pushad  //保存寄存器
+
+		mov esi, ebp
+		mov ebp, esp  //这是固定的
+		add ebp, 0x20   //这也是固定的 处理pushad的堆栈
+
+		popad //保存寄存器取消
+	}
+	__asm nop __asm nop __asm nop __asm nop __asm nop __asm nop __asm nop 
+	__asm nop __asm nop __asm nop __asm nop __asm nop __asm nop __asm nop 
+	__asm nop __asm nop __asm nop __asm nop __asm nop __asm nop __asm nop 
+	__asm nop __asm nop __asm nop __asm nop __asm nop __asm nop __asm nop
+}
+
+#include "NakedHook.h"
+
 int _tmain(int argc, _TCHAR* argv[])
 {
-	_setmode(_fileno(stdout), _O_U16TEXT);
-	_setmode(_fileno(stdin), _O_U16TEXT);
 
-	CSimpleLog::GetInstance().SetLogMaxSize(1024 * 1024 * 50);
-	CSimpleLog::GetInstance().SetFile(L"test.log");
 
-	std::string s =  system_tool::GetSystemUuid();
-	std::string ss = system_tool::GetSystemUuid();
+	//ZHook hook;
+	//hook.Hook(&::MessageBoxA, MyMessageBoxA, 0, (DWORD&)fpMessageBoxA);
 
-	GLOG(error) << L"uuid:" << s.c_str();
+
+
+	NakedHook hook;
+	hook.CreateHook((PVOID) & ::MessageBoxA, &nakedFunc, 0, true);
+	hook.Hook();
+
+	::MessageBoxA(NULL, "Mesasf", NULL, MB_OK);
+
+
 
 	system("pause");
 	return 0;
 }
+
 

@@ -114,6 +114,15 @@
     <ClInclude Include="SimpleLog.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="CInlineHookEx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NakedHook.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ZHook.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -196,6 +205,15 @@
     </ClCompile>
     <ClCompile Include="SimpleLog.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="CInlineHookEx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NakedHook.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ZHook.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
