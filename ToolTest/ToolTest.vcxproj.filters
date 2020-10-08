@@ -123,6 +123,12 @@
     <ClInclude Include="ZHook.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DelayCall.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="OnceCall.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -213,6 +219,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ZHook.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DelayCall.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OnceCall.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

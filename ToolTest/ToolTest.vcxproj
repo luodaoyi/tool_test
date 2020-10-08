@@ -159,6 +159,7 @@
     <ClInclude Include="CLSearchBase.h" />
     <ClInclude Include="CmdParse.h" />
     <ClInclude Include="DebugOutput.h" />
+    <ClInclude Include="DelayCall.h" />
     <ClInclude Include="FileTool.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="InlineHook.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="Language.h" />
     <ClInclude Include="NakedHook.h" />
     <ClInclude Include="NonCopyable.h" />
+    <ClInclude Include="OnceCall.h" />
     <ClInclude Include="PipeClient.h" />
     <ClInclude Include="PipeServer.h" />
     <ClInclude Include="ProcessTool.h" />
@@ -193,12 +195,14 @@
     <ClCompile Include="CLSearchBase.cpp" />
     <ClCompile Include="CmdParse.cpp" />
     <ClCompile Include="DebugOutput.cpp" />
+    <ClCompile Include="DelayCall.cpp" />
     <ClCompile Include="FileTool.cpp" />
     <ClCompile Include="IniFile.cpp" />
     <ClCompile Include="InlineHook.cpp" />
     <ClCompile Include="KeySimulation.cpp" />
     <ClCompile Include="Language.cpp" />
     <ClCompile Include="NakedHook.cpp" />
+    <ClCompile Include="OnceCall.cpp" />
     <ClCompile Include="PipeClient.cpp" />
     <ClCompile Include="PipeServer.cpp" />
     <ClCompile Include="ProcessTool.cpp" />
