@@ -36,6 +36,7 @@ namespace file_tools
 	DWORD64 GetFolderSize(const std::wstring & path);
 	BOOL CreateNormalFile(const std::wstring & file_name);
 	std::wstring GetTmpFileName();
+	void AppendLine(const std::wstring & file_path,const std::string& s);
 }
 
 

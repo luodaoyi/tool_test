@@ -586,5 +586,14 @@ namespace file_tools
 		return buffer;
 	}
 
+	void AppendLine(const std::wstring& file_path,const std::string & s)
+	{
+		std::ofstream f;
+		f.open(file_path, std::ios::out | std::ios::app);
+		if (f.is_open()) {
+			f << s << std::endl;
+			f.close();
+		}
+	}
 }
 

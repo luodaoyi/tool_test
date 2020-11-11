@@ -81,9 +81,9 @@ void NakedHook::UnHook() {
 	SIZE_T writes = 0;
 	if (!VirtualProtect(hook_addr_, 5, PAGE_EXECUTE_READWRITE, &old_protect))
 		THROW_SYSTEM_ERROR("UnHook VirtualProtect Failed")
-		if (!WriteProcessMemory(GetCurrentProcess(), hook_addr_, hook_headr_code_data_.data(), hook_headr_code_data_.size(), &writes))
-			THROW_SYSTEM_ERROR("UnHook WriteProcessMemory Failed")
-			VirtualProtect(hook_addr_, 5, old_protect, &old_protect);
+	if (!WriteProcessMemory(GetCurrentProcess(), hook_addr_, hook_headr_code_data_.data(), hook_headr_code_data_.size(), &writes))
+		THROW_SYSTEM_ERROR("UnHook WriteProcessMemory Failed")
+	VirtualProtect(hook_addr_, 5, old_protect, &old_protect);
 }
 
 DWORD NakedHook::GetSrcNakeCodeSizeAndNopOffset(PVOID nake_func_addr, DWORD& nop_offset)

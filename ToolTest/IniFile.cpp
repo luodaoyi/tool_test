@@ -60,6 +60,9 @@ std::wstring CIniFile::GetIniStr(const std::wstring & key, const std::wstring & 
 		WriteIniStr(key, value, section);
 	return value;
 }
+
+
+
 void CIniFile::WriteIniStr(const std::wstring & key, const std::wstring & value, const std::wstring & section)
 {
 	if (m_file_path_name.empty())

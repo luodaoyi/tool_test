@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <iterator>
 #include <Windows.h>
 #include "ProcessTool.h"
 #include "StringTool.h"

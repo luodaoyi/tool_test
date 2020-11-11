@@ -21,6 +21,8 @@ namespace string_tool
 	template<typename T = std::wstring>
 	std::vector<T> SplitStrByFlag(const T & str, const T& sep)
 	{
+		if (sep.empty())
+			return {};
 		std::vector<T> vec;
 		size_t sep_size = sep.size();
 		size_t pos1 = 0;

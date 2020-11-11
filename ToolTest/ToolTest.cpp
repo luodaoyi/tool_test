@@ -107,23 +107,12 @@ _declspec(naked) void nakedFunc()
 }
 
 #include "NakedHook.h"
+#include <ctime>
+#include <iomanip>
+#include "HideProcess.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-
-
-	//ZHook hook;
-	//hook.Hook(&::MessageBoxA, MyMessageBoxA, 0, (DWORD&)fpMessageBoxA);
-
-
-
-	NakedHook hook;
-	hook.CreateHook((PVOID) & ::MessageBoxA, &nakedFunc, 0, true);
-	hook.Hook();
-
-	::MessageBoxA(NULL, "Mesasf", NULL, MB_OK);
-
-
 
 	system("pause");
 	return 0;
