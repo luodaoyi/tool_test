@@ -50,15 +50,17 @@ std::wstring CSimpleLog::GetPipeLineHead(CSimpleLog::severity_level level)
 }
 void CSimpleLog::Log(const std::wstring & str,CSimpleLog::severity_level level)
 {
-	std::wstring dest_str = GetFileLineHead(level) +  str;
-	std::lock_guard<std::mutex> l(m_mutex);
-	WriteFile(dest_str.c_str(), dest_str.length() * sizeof(wchar_t));
-	if (m_pipe_switch)
-		SendPipe(GetPipeLineHead(level) + str);
-	if (m_udp_switch)
-		SendUdp(GetPipeLineHead(level) + str);
-	if (m_is_cmd_output)
-		std::wcout << GetPipeLineHead(level) + str << std::endl;
+	if (level >= min_severity_) {
+		std::wstring dest_str = GetFileLineHead(level) + str;
+		std::lock_guard<std::mutex> l(m_mutex);
+		WriteFile(dest_str.c_str(), dest_str.length() * sizeof(wchar_t));
+		if (m_pipe_switch)
+			SendPipe(GetPipeLineHead(level) + str);
+		if (m_udp_switch)
+			SendUdp(GetPipeLineHead(level) + str);
+		if (m_is_cmd_output)
+			std::wcout << GetPipeLineHead(level) + str << std::endl;
+	}
 }
 void CSimpleLog::LogOnlyFile(const  std::wstring& str, severity_level level )
 {
@@ -296,4 +298,9 @@ void CSimpleLog::Close()
 	m_pipe_switch = false;
 	m_is_cmd_output = false;
 	m_udp_switch = false;
+}
+
+void CSimpleLog::SetSeverity(const severity_level& l)
+{
+	min_severity_ = l;
 }

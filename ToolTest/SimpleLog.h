@@ -21,9 +21,10 @@ public:
 public:
 	enum severity_level
 	{
-		notice,//一般输出
-		error, //错误
 		debug, //调试时启用
+		notice,//一般输出
+		warn, //
+		error, //错误
 	};
 public:
 	static CSimpleLog & GetInstance()
@@ -42,6 +43,7 @@ public:
 	std::wstring GetFileName() const;
 	void SetLogMaxSize(LONGLONG max_size);
 	void Close();
+	void SetSeverity(const severity_level& l);
 public:
 	class CRecordPump
 	{
@@ -54,11 +56,11 @@ public:
 		{
 			if (m_level == severity_level::debug) {
 #ifdef _DEBUG
-				m_log.Log(ss.str());
+				m_log.Log(ss.str(), m_level);
 #endif
 			}
 			else
-				m_log.Log(ss.str());
+				m_log.Log(ss.str(), m_level);
 		}
 		std::wostringstream & GetStream() 
 		{
@@ -96,6 +98,7 @@ private:
 	CSimpleLog(const CSimpleLog &) = delete;
 	void operator ==(const CSimpleLog &) = delete;
 	LONGLONG m_max_log_size = 1024 * 1024 * 60;
+	severity_level min_severity_ = notice;
 };
 CSimpleLog::CRecordPump MakeRecordPump(CSimpleLog & log, CSimpleLog::severity_level l);
 

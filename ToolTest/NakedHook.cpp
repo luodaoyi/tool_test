@@ -1,7 +1,8 @@
 #include "NakedHook.h"
 #include <stdexcept>
 #include <system_error>  
-
+#include <memory>
+#include "DebugOutput.h"
 
 #pragma pack(push, 1)
 typedef struct _JMPCODE_
@@ -20,8 +21,10 @@ void NakedHook::CreateHook(PVOID hook_addr, PVOID nake_func_addr, DWORD nop_coun
 	FixRealAddr((DWORD&)nake_func_addr);
 	FixRealAddr((DWORD&)hook_addr);
 	//得到NakeCode Size
+	nop_count_ = nop_count;
 	DWORD nop_offset = 0;
 	DWORD nake_code_size = GetSrcNakeCodeSizeAndNopOffset(nake_func_addr, nop_offset);
+	
 
 	//分配ShellCode空间
 	const LPVOID nake_shell_code = ::VirtualAlloc(NULL, nake_code_size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -70,20 +73,31 @@ void NakedHook::Hook() {
 	hookJmp.addr = (DWORD)shell_code_ - (DWORD)hook_addr_ - 5;
 	DWORD old_protect = 0;
 	SIZE_T writes = 0;
-	if (!VirtualProtect(hook_addr_, 5, PAGE_EXECUTE_READWRITE, &old_protect))
+	if (!VirtualProtect(hook_addr_, sizeof(JMPCODE_) + nop_count_, PAGE_EXECUTE_READWRITE, &old_protect))
 		THROW_SYSTEM_ERROR("HOOK VirtualProtect Failed")
-		if (!WriteProcessMemory(GetCurrentProcess(), hook_addr_, &hookJmp, sizeof(JMPCODE_), &writes))
+
+	if (!WriteProcessMemory(GetCurrentProcess(), hook_addr_, &hookJmp, sizeof(JMPCODE_), &writes))
+		THROW_SYSTEM_ERROR("HOOK WriteProcessMemory Failed")
+
+
+	//写剩余NOP
+	if (nop_count_) {
+		OutputDebugStr(L"WriteNop:%08x WriteSize:%d", (DWORD)hook_addr_ + sizeof(JMPCODE_), nop_count_);
+		BYTE nop_codes[] = { 0x90,0x90, 0x90, 0x90,0x90,0x90,0x90,0x90 };
+		if (!WriteProcessMemory(GetCurrentProcess(), (LPVOID)((DWORD)hook_addr_ + sizeof(JMPCODE_)), nop_codes, nop_count_, &writes))
 			THROW_SYSTEM_ERROR("HOOK WriteProcessMemory Failed")
-			VirtualProtect(hook_addr_, 5, old_protect, &old_protect);
+		OutputDebugStr(L"WriteNop:%d", writes);
+	}
+	VirtualProtect(hook_addr_, sizeof(JMPCODE_) + nop_count_, old_protect, &old_protect);
 }
 void NakedHook::UnHook() {
 	DWORD old_protect = 0;
 	SIZE_T writes = 0;
-	if (!VirtualProtect(hook_addr_, 5, PAGE_EXECUTE_READWRITE, &old_protect))
+	if (!VirtualProtect(hook_addr_, hook_headr_code_data_.size(), PAGE_EXECUTE_READWRITE, &old_protect))
 		THROW_SYSTEM_ERROR("UnHook VirtualProtect Failed")
 	if (!WriteProcessMemory(GetCurrentProcess(), hook_addr_, hook_headr_code_data_.data(), hook_headr_code_data_.size(), &writes))
 		THROW_SYSTEM_ERROR("UnHook WriteProcessMemory Failed")
-	VirtualProtect(hook_addr_, 5, old_protect, &old_protect);
+	VirtualProtect(hook_addr_, hook_headr_code_data_.size(), old_protect, &old_protect);
 }
 
 DWORD NakedHook::GetSrcNakeCodeSizeAndNopOffset(PVOID nake_func_addr, DWORD& nop_offset)

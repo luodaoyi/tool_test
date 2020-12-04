@@ -639,8 +639,10 @@ namespace process_tool
 
 		if (isHide)
 			si.dwFlags = STARTF_USESHOWWINDOW;
-
-		BOOL bOk = ::CreateProcess(app_name, (LPWSTR)cmd_line, NULL, NULL, bInherit, dwCreateFlag, NULL, cur_path, &si, &pi);
+		wchar_t sz_cmd[MAX_PATH] = { 0 };
+		if (cmd_line)
+			wcscpy_s(sz_cmd, cmd_line);
+		BOOL bOk = ::CreateProcess(app_name,wcslen(sz_cmd) > 0 ?  sz_cmd : NULL, NULL, NULL, bInherit, dwCreateFlag, NULL, cur_path, &si, &pi);
 		if (!bOk)
 			return FALSE;
 		else
@@ -689,8 +691,10 @@ namespace process_tool
 	{
 		HANDLE process_handle = INVALID_HANDLE_VALUE;
 		HANDLE thread_handle = INVALID_HANDLE_VALUE;
+		wchar_t cmd[MAX_PATH] = {0};
+		wcscpy_s(cmd, cmd_line);
 		std::wstring process_name = app_name ? app_name : cmd_line;
-		if (!StartProcess(app_name, cmd_line, cur_path, 0, 0, 0, &process_handle, &thread_handle,isHide))
+		if (!StartProcess(app_name, wcslen(cmd) > 0 ? cmd : NULL, cur_path, 0, 0, 0, &process_handle, &thread_handle,isHide))
 		{
 			DWORD last_error = ::GetLastError();
 			OutputDebugStr(L"创建进程%s出错,错误ID:%d", process_name.c_str(), last_error);
@@ -794,16 +798,11 @@ namespace process_tool
 		info.dwSize = sizeof(PROCESSENTRY32);
 		if (Process32First(handle, &info))
 		{
-			if (fnCheck(info))
-				ret_pid_list.push_back(info);
-			else
+			do
 			{
-				while (Process32Next(handle, &info) != FALSE)
-				{
-					if (fnCheck(info))
-						ret_pid_list.push_back(info);
-				}
-			}
+				if (fnCheck(info))
+					ret_pid_list.push_back(info);
+			} while (Process32Next(handle, &info));
 		}
 		return ret_pid_list;
 	}

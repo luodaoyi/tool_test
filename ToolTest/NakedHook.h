@@ -19,5 +19,6 @@ private:
 private:
 	PVOID shell_code_ = nullptr;
 	PVOID hook_addr_ = nullptr;
+	DWORD nop_count_ = 0;
 	std::vector<BYTE> hook_headr_code_data_;
 };
