@@ -31,11 +31,9 @@ namespace file_tools
 		std::vector<std::string> ret_lines;
 		if (in_file.is_open())
 		{
-			char line_buffer[10240];
-			while (in_file.getline(line_buffer, 10240))
-			{
-				ret_lines.push_back(line_buffer);
-			}
+			std::string line;
+			while (std::getline(in_file,line))
+				ret_lines.push_back(line);
 			in_file.close();
 		}
 		return ret_lines;
@@ -288,7 +286,7 @@ namespace file_tools
 	{
 
 		HANDLE file_handle = ::CreateFile(file_name.c_str(),
-			GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (file_handle == INVALID_HANDLE_VALUE)
 			return FALSE;
 		SetResDeleter(file_handle, [](HANDLE & p){::CloseHandle(p); });

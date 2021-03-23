@@ -16,8 +16,17 @@ typedef struct _JMPCODE_
  std::error_code ec(dwErrVal, std::system_category()); \
  throw std::system_error(ec, X); }
 
+NakedHook::NakedHook()
+{}
+NakedHook::NakedHook(PVOID hook_addr, PVOID nake_func_addr, DWORD nop_count, bool jump_back)
+{
+	CreateHook(hook_addr, nake_func_addr, nop_count, jump_back);
+}
 
 void NakedHook::CreateHook(PVOID hook_addr, PVOID nake_func_addr, DWORD nop_count, bool jump_back ) {
+	if (shell_code_)
+		return;
+
 	FixRealAddr((DWORD&)nake_func_addr);
 	FixRealAddr((DWORD&)hook_addr);
 	//得到NakeCode Size
@@ -30,12 +39,12 @@ void NakedHook::CreateHook(PVOID hook_addr, PVOID nake_func_addr, DWORD nop_coun
 	const LPVOID nake_shell_code = ::VirtualAlloc(NULL, nake_code_size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 	if (!nake_shell_code)
 		THROW_SYSTEM_ERROR("VirtualAlloc NakeCode Failed")
-		//写入 ShellCode
-		SIZE_T writes = 0;
+	//写入 ShellCode
+	SIZE_T writes = 0;
 	if (!::WriteProcessMemory(GetCurrentProcess(), nake_shell_code, nake_func_addr, nake_code_size, &writes))
 		THROW_SYSTEM_ERROR("WriteProcessMemory NakeCode Failed")
-		//Fix ShellCode CALL
-		auto fix_items = GetSrcNakeCodeFixItems(nake_func_addr, nake_code_size);
+	//Fix ShellCode CALL
+	auto fix_items = GetSrcNakeCodeFixItems(nake_func_addr, nake_code_size);
 	for (const auto& fix_item : fix_items) {
 		if (*((BYTE*)nake_shell_code + fix_item.code_offset) == 0xE8) {
 			//JMP的地址(88881234) – 代码地址(010073bb) – 5（字节） = 机器码跳转地址(E9 87879e74)
@@ -44,6 +53,7 @@ void NakedHook::CreateHook(PVOID hook_addr, PVOID nake_func_addr, DWORD nop_coun
 				THROW_SYSTEM_ERROR("WriteProcessMemory FixItem Failed")
 		}
 	}
+	//Fix ShellCode For跳回
 	std::vector<BYTE> hook_addr_save_data(5 + nop_count);
 	if (jump_back) {
 		//原目标函数头

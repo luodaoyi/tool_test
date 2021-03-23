@@ -5,6 +5,8 @@
 class NakedHook
 {
 public:
+	NakedHook();
+	NakedHook(PVOID hook_addr, PVOID nake_func_addr, DWORD nop_count, bool jump_back = true);
 	void CreateHook(PVOID hook_addr, PVOID nake_func_addr, DWORD nop_count, bool jump_back = true);
 	void Hook();
 	void UnHook();

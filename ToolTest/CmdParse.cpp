@@ -22,6 +22,21 @@ void CCmdParse::Parse(int argc, wchar_t * argv[])
 		}
 	}
 }
+void CCmdParse::Parse(int argc, char* argv[])
+{
+	for (int i = 0; i < argc; i++)
+		m_cmd_list.push_back(string_tool::CharToWide(argv[i]));
+	for (const std::wstring& option : m_cmd_list)
+	{
+		auto equal_pos = option.find(L'=');
+		if (equal_pos != std::wstring::npos && equal_pos < option.length() - 1)
+		{
+			std::wstring key = option.substr(0, equal_pos);
+			std::wstring val = option.substr(equal_pos + 1);
+			m_key_values[key] = val;
+		}
+	}
+}
 void CCmdParse::Parse(const std::wstring & s)
 {
 	std::wstring::size_type begin_pos = -1;

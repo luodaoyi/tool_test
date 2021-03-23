@@ -18,6 +18,8 @@ namespace string_tool
 	std::wstring CharToWide(const std::string & s);
 	std::string WideToChar(const std::wstring & s);
 
+	std::wstring AsciiCharToWide(const std::string& s);
+
 	template<typename T = std::wstring>
 	std::vector<T> SplitStrByFlag(const T & str, const T& sep)
 	{
@@ -67,5 +69,7 @@ namespace string_tool
 
 
 	std::wstring SprintfStr(const wchar_t * fmt, ...);
+
+	std::vector<std::string> Split(const std::string & s,char delim);
 }
 

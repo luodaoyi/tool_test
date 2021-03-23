@@ -21,7 +21,7 @@ namespace process_tool
 	BOOL IsMutiInstance(const std::wstring & name);//检测多开
 	BOOL KillProcess(DWORD dwPid);
 	BOOL InjectDll(HANDLE hProcess, const std::wstring & dll_path, const std::wstring & dll_func_name, HMODULE * hDllModule = NULL);
-	HWND FindProcessWnd(const DWORD dwPid, LPWSTR class_name, LPWSTR caption_name);//得到进程窗口
+	HWND FindProcessWnd(const DWORD dwPid, LPCWSTR class_name, LPCWSTR caption_name);//得到进程窗口
 	HWND WaitForProcessWindow(const DWORD dwPid, DWORD milli_seconds, LPWSTR class_name, LPWSTR caption_name);//等待进程窗口显示
 	DWORD GetWindowThreadID(HWND hWnd);
 	DWORD GetWindowProcessID(HWND hWnd);

@@ -109,11 +109,11 @@ _declspec(naked) void nakedFunc()
 #include "NakedHook.h"
 #include <ctime>
 #include <iomanip>
-#include "HideProcess.h"
 
+
+#include "ThreadPool.h"
 int _tmain(int argc, _TCHAR* argv[])
 {
-
 	system("pause");
 	return 0;
 }

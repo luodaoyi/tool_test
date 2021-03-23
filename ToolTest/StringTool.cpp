@@ -10,6 +10,7 @@
 #include <memory>
 #include <algorithm>
 #include <cctype>
+#include <sstream>
 namespace string_tool
 {
 
@@ -397,4 +398,25 @@ namespace string_tool
 		return temp;
 	}
 
+
+	std::wstring AsciiCharToWide(const std::string& s)
+	{
+		return std::wstring(s.begin(),s.end());
+	}
+
+	template <typename Out>
+	void split(const std::string& s, char delim, Out result) {
+		std::istringstream iss(s);
+		std::string item;
+		while (std::getline(iss, item, delim)) {
+			*result++ = item;
+		}
+	}
+
+	std::vector<std::string> Split(const std::string& s, char delim) {
+		std::vector<std::string> elems;
+		split(s, delim, std::back_inserter(elems));
+		return elems;
+	}
 }
+

@@ -578,8 +578,10 @@ namespace process_tool
 				*hDllModule = RemoteHandle;
 			return TRUE;
 		}
-		else
+		else {
+			OutputDebugStr(L"Inject Failed");
 			return FALSE;
+		}
 
 	}
 
@@ -830,7 +832,7 @@ namespace process_tool
 			return TRUE;
 	}
 
-	HWND FindProcessWnd(const DWORD dwPid, LPWSTR class_name, LPWSTR caption_name)
+	HWND FindProcessWnd(const DWORD dwPid, LPCWSTR class_name, LPCWSTR caption_name)
 	{
 		for (HWND pre_window = NULL;;)
 		{
@@ -848,7 +850,7 @@ namespace process_tool
 	
 	HWND WaitForProcessWindow(const DWORD dwPid, DWORD milli_seconds, LPWSTR class_name, LPWSTR caption_name)
 	{
-		DWORD begin_time = GetTickCount();
+		DWORD64 begin_time = GetTickCount64();
 		HWND wnd_ret = NULL;
 		for (;;)
 		{
@@ -857,7 +859,7 @@ namespace process_tool
 			else
 				if (::IsWindowVisible(wnd_ret))
 					return wnd_ret;
-			if (GetTickCount() - begin_time > milli_seconds)
+			if (GetTickCount64() - begin_time > milli_seconds)
 				return NULL;
 			if (!IsProcessRunning(dwPid))
 				return NULL;
@@ -890,8 +892,8 @@ namespace process_tool
 		HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, dwPid);
 		if (!hProcess)
 			return FALSE;
-		TCHAR file_name[MAX_PATH] = { 0 };
-		if (GetModuleFileNameEx(hProcess, NULL, file_name, MAX_PATH))
+		WCHAR file_name[MAX_PATH] = { 0 };
+		if (GetModuleFileNameExW(hProcess, NULL, file_name, MAX_PATH))
 		{
 			full_path = file_name;
 			return TRUE;
